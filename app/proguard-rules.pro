@@ -1,0 +1,2 @@
+-keepattributes Signature, *Annotation*
+-keep class com.visokr.android.data.model.** { *; }
