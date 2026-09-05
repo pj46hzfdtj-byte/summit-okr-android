@@ -47,6 +47,7 @@ import com.visokr.android.ui.EmptyState
 import com.visokr.android.ui.ErrorView
 import com.visokr.android.ui.LoadingView
 import com.visokr.android.ui.LocalVisTokens
+import com.visokr.android.ui.VisTopBar
 import com.visokr.android.ui.parseHexColor
 import java.time.Instant
 import java.time.LocalDate
@@ -65,7 +66,7 @@ fun GanttPage(navController: NavController) {
     Scaffold(
         containerColor = if (t.macos) Color.Transparent else t.bg,
         topBar = {
-            TopAppBar(
+            VisTopBar(
                 title = { Text("甘特图", fontWeight = FontWeight.Bold) },
                 navigationIcon = { IconButton(onClick = { navController.popBackStack() }) { Icon(Icons.Outlined.ArrowBack, null) } },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = if (t.macos) Color.Transparent else MaterialTheme.colorScheme.surface),

@@ -66,6 +66,7 @@ import com.visokr.android.core.Routes
 import com.visokr.android.ui.LocalVisTokens
 import com.visokr.android.ui.VisCard
 import com.visokr.android.ui.VisSeeds
+import com.visokr.android.ui.VisTopBar
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -81,7 +82,7 @@ fun MePage(navController: NavController) {
     Scaffold(
         containerColor = if (t.macos) Color.Transparent else t.bg,
         topBar = {
-            TopAppBar(
+            VisTopBar(
                 title = { Text("我的", fontWeight = FontWeight.Bold) },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = if (t.macos) Color.Transparent else MaterialTheme.colorScheme.surface),
             )

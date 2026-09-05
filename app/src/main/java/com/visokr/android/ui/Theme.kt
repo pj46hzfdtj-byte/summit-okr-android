@@ -193,6 +193,22 @@ private val VisTypography = Typography(
     labelSmall = TextStyle(fontSize = 11.sp),
 )
 
+/** macOS 主题：SF Pro 风格负字距（正文 -0.01，标题 -0.02），对齐 Flutter theme.dart */
+private val VisTypographyMacos = VisTypography.copy(
+    displaySmall = VisTypography.displaySmall.copy(letterSpacing = (-0.02).sp),
+    headlineMedium = VisTypography.headlineMedium.copy(letterSpacing = (-0.02).sp),
+    headlineSmall = VisTypography.headlineSmall.copy(letterSpacing = (-0.02).sp),
+    titleLarge = VisTypography.titleLarge.copy(letterSpacing = (-0.02).sp),
+    titleMedium = VisTypography.titleMedium.copy(letterSpacing = (-0.02).sp),
+    titleSmall = VisTypography.titleSmall.copy(letterSpacing = (-0.02).sp),
+    bodyLarge = VisTypography.bodyLarge.copy(letterSpacing = (-0.01).sp),
+    bodyMedium = VisTypography.bodyMedium.copy(letterSpacing = (-0.01).sp),
+    bodySmall = VisTypography.bodySmall.copy(letterSpacing = (-0.01).sp),
+    labelLarge = VisTypography.labelLarge.copy(letterSpacing = (-0.01).sp),
+    labelMedium = VisTypography.labelMedium.copy(letterSpacing = (-0.01).sp),
+    labelSmall = VisTypography.labelSmall.copy(letterSpacing = (-0.01).sp),
+)
+
 @Composable
 fun VisTheme(
     seed: String,
@@ -221,7 +237,12 @@ fun VisTheme(
         extraLarge = RoundedCornerShape(24.dp),
     )
     androidx.compose.runtime.CompositionLocalProvider(LocalVisTokens provides tokens) {
-        MaterialTheme(colorScheme = scheme, typography = VisTypography, shapes = shapes, content = content)
+        MaterialTheme(
+            colorScheme = scheme,
+            typography = if (macos) VisTypographyMacos else VisTypography,
+            shapes = shapes,
+            content = content,
+        )
     }
 }
 

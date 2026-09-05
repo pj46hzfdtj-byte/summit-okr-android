@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
@@ -30,12 +31,14 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -63,6 +66,7 @@ import com.visokr.android.ui.LoadingView
 import com.visokr.android.ui.LocalVisTokens
 import com.visokr.android.ui.PillTag
 import com.visokr.android.ui.VisCard
+import com.visokr.android.ui.VisTopBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -76,7 +80,7 @@ fun VisionPage(navController: NavController) {
     Scaffold(
         containerColor = if (t.macos) Color.Transparent else t.bg,
         topBar = {
-            TopAppBar(
+            VisTopBar(
                 title = { Text("愿景", fontWeight = FontWeight.Bold) },
                 navigationIcon = { IconButton(onClick = { navController.popBackStack() }) { Icon(Icons.Outlined.ArrowBack, null) } },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = if (t.macos) Color.Transparent else MaterialTheme.colorScheme.surface),
@@ -169,37 +173,44 @@ private fun MenuRow(icon: ImageVector, label: String, danger: Boolean = false, o
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun VisionEditDialog(initial: Vision?, onDismiss: () -> Unit, onSave: (String, Int?, Int?) -> Unit) {
     var content by remember { mutableStateOf(initial?.content ?: "") }
     var startAge by remember { mutableStateOf(initial?.startAge?.toString() ?: "") }
     var endAge by remember { mutableStateOf(initial?.endAge?.toString() ?: "") }
-    AlertDialog(
+    // 对齐 Flutter：愿景创建/编辑用底部弹层
+    ModalBottomSheet(
         onDismissRequest = onDismiss,
-        title = { Text(if (initial == null) "新建愿景" else "编辑愿景", fontWeight = FontWeight.Bold) },
-        text = {
-            Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                OutlinedTextField(value = content, onValueChange = { content = it }, label = { Text("愿景内容") }, modifier = Modifier.fillMaxWidth())
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedTextField(
-                        value = startAge, onValueChange = { startAge = it }, label = { Text("起始年龄") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.weight(1f), singleLine = true,
-                    )
-                    OutlinedTextField(
-                        value = endAge, onValueChange = { endAge = it }, label = { Text("结束年龄") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.weight(1f), singleLine = true,
-                    )
-                }
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+    ) {
+        Column(
+            Modifier.fillMaxWidth().padding(horizontal = 20.dp).padding(bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Text(if (initial == null) "新建愿景" else "编辑愿景", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
+            OutlinedTextField(value = content, onValueChange = { content = it }, label = { Text("愿景内容") }, modifier = Modifier.fillMaxWidth())
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(
+                    value = startAge, onValueChange = { startAge = it }, label = { Text("起始年龄") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.weight(1f), singleLine = true,
+                )
+                OutlinedTextField(
+                    value = endAge, onValueChange = { endAge = it }, label = { Text("结束年龄") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.weight(1f), singleLine = true,
+                )
             }
-        },
-        confirmButton = {
-            TextButton(
-                onClick = { onSave(content.trim(), startAge.toIntOrNull(), endAge.toIntOrNull()) },
-                enabled = content.isNotBlank(),
-            ) { Text("保存") }
-        },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("取消") } },
-    )
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                TextButton(onClick = onDismiss) { Text("取消") }
+                Spacer(Modifier.size(8.dp))
+                TextButton(
+                    onClick = { onSave(content.trim(), startAge.toIntOrNull(), endAge.toIntOrNull()) },
+                    enabled = content.isNotBlank(),
+                ) { Text("保存") }
+            }
+        }
+    }
 }
 
 @Composable

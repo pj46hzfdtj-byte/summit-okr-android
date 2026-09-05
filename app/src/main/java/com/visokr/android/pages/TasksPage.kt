@@ -32,14 +32,16 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -62,8 +64,9 @@ import com.visokr.android.core.UiState
 import com.visokr.android.ui.EmptyState
 import com.visokr.android.ui.ErrorView
 import com.visokr.android.ui.LoadingView
-import com.visokr.android.ui.LocalVisTokens
 import com.visokr.android.ui.VisCard
+import com.visokr.android.ui.VisTopBar
+import com.visokr.android.ui.LocalVisTokens
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -85,7 +88,7 @@ fun TasksPage(navController: NavController) {
     Scaffold(
         containerColor = if (t.macos) Color.Transparent else t.bg,
         topBar = {
-            TopAppBar(
+            VisTopBar(
                 title = { Text("任务", fontWeight = FontWeight.Bold) },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = if (t.macos) Color.Transparent else MaterialTheme.colorScheme.surface),
             )
@@ -108,7 +111,7 @@ fun TasksPage(navController: NavController) {
                 onNext = { month = month.plusMonths(1) },
                 onSelect = { selected = it },
             )
-            Box(Modifier.weight(1f)) {
+            PullToRefreshBox(onRefresh = { vm.refresh() }, isRefreshing = false, modifier = Modifier.weight(1f)) {
                 when (val s = tasks) {
                     is UiState.Loading -> LoadingView()
                     is UiState.Error -> ErrorView(s.message, onRetry = { vm.refresh() })
@@ -301,47 +304,53 @@ private fun TaskCreateDialog(
     var showDate by remember { mutableStateOf(false) }
     var showTime by remember { mutableStateOf(false) }
 
-    AlertDialog(
+    // 对齐 Flutter TaskEditSheet：底部弹层表单（圆角顶部 24dp）
+    ModalBottomSheet(
         onDismissRequest = onDismiss,
-        title = { Text("新建任务", fontWeight = FontWeight.Bold) },
-        text = {
-            Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                OutlinedTextField(value = title, onValueChange = { title = it }, label = { Text("任务标题") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedButton(onClick = { showDate = true }, modifier = Modifier.weight(1f)) {
-                        Text(date.format(DateTimeFormatter.ofPattern("M月d日")))
-                    }
-                    OutlinedButton(onClick = { showTime = true }, modifier = Modifier.weight(1f)) {
-                        Text(time?.format(DateTimeFormatter.ofPattern("HH:mm")) ?: "时间")
-                    }
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+    ) {
+        Column(
+            Modifier.fillMaxWidth().padding(horizontal = 20.dp).padding(bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Text("新建任务", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
+            OutlinedTextField(value = title, onValueChange = { title = it }, label = { Text("任务标题") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(onClick = { showDate = true }, modifier = Modifier.weight(1f)) {
+                    Text(date.format(DateTimeFormatter.ofPattern("M月d日")))
                 }
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    listOf("none", "daily", "weekly", "weekdays").forEach { r ->
-                        val sel = repeat == r
-                        Box(
-                            Modifier.clip(RoundedCornerShape(999.dp))
-                                .background(if (sel) MaterialTheme.colorScheme.primaryContainer else Color.Transparent)
-                                .clickable { repeat = r }
-                                .padding(horizontal = 10.dp, vertical = 5.dp),
-                        ) {
-                            Text(repeatLabel(r), fontSize = 12.sp, color = if (sel) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
+                OutlinedButton(onClick = { showTime = true }, modifier = Modifier.weight(1f)) {
+                    Text(time?.format(DateTimeFormatter.ofPattern("HH:mm")) ?: "时间")
+                }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                listOf("none", "daily", "weekly", "weekdays").forEach { r ->
+                    val sel = repeat == r
+                    Box(
+                        Modifier.clip(RoundedCornerShape(999.dp))
+                            .background(if (sel) MaterialTheme.colorScheme.primaryContainer else Color.Transparent)
+                            .clickable { repeat = r }
+                            .padding(horizontal = 10.dp, vertical = 5.dp),
+                    ) {
+                        Text(repeatLabel(r), fontSize = 12.sp, color = if (sel) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }
-        },
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    val dt = time ?: LocalTime.of(9, 0)
-                    val iso = LocalDateTime.of(date, dt).atZone(ZoneId.systemDefault()).toInstant().toString()
-                    onCreate(title.trim(), iso, repeat)
-                },
-                enabled = title.isNotBlank(),
-            ) { Text("保存") }
-        },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("取消") } },
-    )
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                TextButton(onClick = onDismiss) { Text("取消") }
+                Spacer(Modifier.size(8.dp))
+                TextButton(
+                    onClick = {
+                        val dt = time ?: LocalTime.of(9, 0)
+                        val iso = LocalDateTime.of(date, dt).atZone(ZoneId.systemDefault()).toInstant().toString()
+                        onCreate(title.trim(), iso, repeat)
+                    },
+                    enabled = title.isNotBlank(),
+                ) { Text("保存") }
+            }
+        }
+    }
 
     if (showDate) {
         val state = rememberDatePickerState(initialSelectedDateMillis = date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli())

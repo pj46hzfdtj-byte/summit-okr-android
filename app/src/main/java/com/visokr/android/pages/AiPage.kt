@@ -72,6 +72,7 @@ import com.visokr.android.core.unwrap
 import com.visokr.android.core.unwrapOrNull
 import com.visokr.android.ui.LocalVisTokens
 import com.visokr.android.ui.VisCard
+import com.visokr.android.ui.VisTopBar
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -86,7 +87,7 @@ fun AiPage(navController: NavController) {
     Scaffold(
         containerColor = if (t.macos) Color.Transparent else t.bg,
         topBar = {
-            TopAppBar(
+            VisTopBar(
                 title = { Text("AI 助手", fontWeight = FontWeight.Bold) },
                 navigationIcon = { IconButton(onClick = { navController.popBackStack() }) { Icon(Icons.Outlined.ArrowBack, null) } },
                 actions = {

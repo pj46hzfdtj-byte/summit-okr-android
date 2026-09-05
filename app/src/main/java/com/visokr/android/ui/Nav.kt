@@ -1,8 +1,11 @@
 package com.visokr.android.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Dashboard
 import androidx.compose.material.icons.outlined.EventNote
@@ -28,6 +31,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -59,11 +63,16 @@ private data class TabSpec(val route: String, val label: String, val icon: Image
 fun RootNav() {
     val navController = rememberNavController()
     var loggedIn by remember { mutableStateOf(com.visokr.android.core.TokenStore.accessToken != null) }
+    val t = LocalVisTokens.current
 
-    NavHost(
-        navController = navController,
-        startDestination = if (loggedIn) Routes.SUMMARY else Routes.LOGIN,
-    ) {
+    // 对齐 Flutter main.dart 的 AppBackground：macOS 主题下全局挂 Aurora 渐变+光斑背景，
+    // 各页 Scaffold 已设 Transparent 容器色，自然透出（登录页自带，不重复包）。
+    Box(Modifier.fillMaxSize().then(if (t.macos) Modifier.background(auroraBrush(isDarkTheme())) else Modifier.background(t.bg))) {
+        if (t.macos) AuroraOverlay()
+        NavHost(
+            navController = navController,
+            startDestination = if (loggedIn) Routes.SUMMARY else Routes.LOGIN,
+        ) {
         composable(Routes.LOGIN) {
             LoginPage(
                 onLoggedIn = {
@@ -106,6 +115,7 @@ fun RootNav() {
         composable(Routes.RECYCLE) { RecyclePage(navController) }
         composable(Routes.HELP) { HelpPage(navController) }
         composable(Routes.NOTIFICATIONS) { NotificationsPage(navController) }
+        }
     }
 }
 
@@ -123,13 +133,12 @@ private fun ShellScaffold(
         TabSpec(Routes.ME, "我的", Icons.Outlined.Person, Icons.Filled.Person),
     )
     val t = LocalVisTokens.current
-    Scaffold(
-        containerColor = if (t.macos) androidx.compose.ui.graphics.Color.Transparent else t.bg,
-        bottomBar = {
-            NavigationBar(
-                containerColor = if (t.macos) androidx.compose.ui.graphics.Color.Transparent else MaterialTheme.colorScheme.surface,
-                tonalElevation = 0.dp(),
-            ) {
+    // 对齐 Flutter ShellPage：macOS 下导航栏顶部圆角 22 + 半透明玻璃底（.82 alpha）
+    val navBar: @Composable () -> Unit = {
+        NavigationBar(
+            containerColor = if (t.macos) androidx.compose.ui.graphics.Color.Transparent else MaterialTheme.colorScheme.surface,
+            tonalElevation = 0.dp(),
+        ) {
                 tabs.forEachIndexed { i, tab ->
                     NavigationBarItem(
                         selected = selected == i,
@@ -154,6 +163,18 @@ private fun ShellScaffold(
                     )
                 }
             }
+    }
+    Scaffold(
+        containerColor = if (t.macos) androidx.compose.ui.graphics.Color.Transparent else t.bg,
+        bottomBar = {
+            if (t.macos) {
+                Box(
+                    Modifier.fillMaxWidth().background(
+                        t.card.copy(alpha = 0.82f),
+                        RoundedCornerShape(topStart = 22.dp, topEnd = 22.dp),
+                    ),
+                ) { navBar() }
+            } else navBar()
         },
     ) { padding ->
         Box(Modifier.fillMaxSize().padding(padding)) { content(Modifier) }

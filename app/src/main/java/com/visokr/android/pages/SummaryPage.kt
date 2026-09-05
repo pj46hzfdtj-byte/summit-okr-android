@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -30,7 +31,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
@@ -54,6 +54,7 @@ import com.visokr.android.ui.ErrorView
 import com.visokr.android.ui.LoadingView
 import com.visokr.android.ui.LocalVisTokens
 import com.visokr.android.ui.VisCard
+import com.visokr.android.ui.VisTopBar
 import com.visokr.android.ui.toPctInt
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -67,7 +68,7 @@ fun SummaryPage(navController: NavController) {
     Scaffold(
         containerColor = if (t.macos) Color.Transparent else t.bg,
         topBar = {
-            TopAppBar(
+            VisTopBar(
                 title = { Text("摘要", fontWeight = FontWeight.Bold) },
                 actions = {
                     IconButton(onClick = { navController.navigate(Routes.NOTIFICATIONS) }) {
@@ -80,7 +81,7 @@ fun SummaryPage(navController: NavController) {
             )
         },
     ) { padding ->
-        PullToRefreshBox(onRefresh = { vm.refresh() }, isRefreshing = false, modifier = Modifier.padding(padding)) {
+        PullToRefreshBox(onRefresh = { vm.refresh() }, isRefreshing = false, modifier = Modifier.padding(padding).fillMaxSize()) {
             when (val s = summary) {
                 is UiState.Loading -> LoadingView()
                 is UiState.Error -> ErrorView(s.message, onRetry = { vm.refresh() })

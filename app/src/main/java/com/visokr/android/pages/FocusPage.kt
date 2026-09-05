@@ -6,12 +6,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.ArrowBack
@@ -23,12 +25,14 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -56,6 +60,7 @@ import com.visokr.android.ui.LoadingView
 import com.visokr.android.ui.LocalVisTokens
 import com.visokr.android.ui.PillTag
 import com.visokr.android.ui.VisCard
+import com.visokr.android.ui.VisTopBar
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -71,7 +76,7 @@ fun FocusPage(navController: NavController) {
     Scaffold(
         containerColor = if (t.macos) Color.Transparent else t.bg,
         topBar = {
-            TopAppBar(
+            VisTopBar(
                 title = { Text("专注周期", fontWeight = FontWeight.Bold) },
                 navigationIcon = { IconButton(onClick = { navController.popBackStack() }) { Icon(Icons.Outlined.ArrowBack, null) } },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = if (t.macos) Color.Transparent else MaterialTheme.colorScheme.surface),
@@ -83,14 +88,14 @@ fun FocusPage(navController: NavController) {
             }
         },
     ) { padding ->
+      PullToRefreshBox(onRefresh = { vm.refresh() }, isRefreshing = false, modifier = Modifier.padding(padding).fillMaxSize()) {
         when (val s = cycle) {
-            is UiState.Loading -> LoadingView(Modifier.padding(padding))
-            is UiState.Error -> ErrorView(s.message, onRetry = { vm.refresh() }, modifier = Modifier.padding(padding))
+            is UiState.Loading -> LoadingView()
+            is UiState.Error -> ErrorView(s.message, onRetry = { vm.refresh() })
             is UiState.Success -> {
                 val c = s.data
-                if (c == null) EmptyState("暂无活跃专注周期", Modifier.padding(padding), icon = Icons.Outlined.Timer)
+                if (c == null) EmptyState("暂无活跃专注周期", icon = Icons.Outlined.Timer)
                 else LazyColumn(
-                    modifier = Modifier.padding(padding),
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
@@ -141,10 +146,11 @@ fun FocusPage(navController: NavController) {
                 }
             }
         }
+      }
     }
 
     if (showCreate) {
-        CreateCycleDialog(onDismiss = { showCreate = false }, onCreate = { name, ids ->
+        CreateCycleSheet(onDismiss = { showCreate = false }, onCreate = { name, ids ->
             vm.create(name, ids)
             showCreate = false
         })
@@ -168,8 +174,10 @@ private fun WeightDialog(current: Int, onDismiss: () -> Unit, onSave: (Int) -> U
     )
 }
 
+/** 专注周期创建：底部弹层（对齐 Flutter showModalBottomSheet） */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun CreateCycleDialog(onDismiss: () -> Unit, onCreate: (String, List<String>) -> Unit) {
+private fun CreateCycleSheet(onDismiss: () -> Unit, onCreate: (String, List<String>) -> Unit) {
     val goalsVM: GoalsVM = viewModel()
     val tree by goalsVM.tree.collectAsState()
     val objectives = remember(tree) {
@@ -183,40 +191,45 @@ private fun CreateCycleDialog(onDismiss: () -> Unit, onCreate: (String, List<Str
     var name by remember { mutableStateOf("") }
     val selected = remember { mutableStateOf(setOf<String>()) }
 
-    AlertDialog(
+    ModalBottomSheet(
         onDismissRequest = onDismiss,
-        title = { Text("新建专注周期", fontWeight = FontWeight.Bold) },
-        text = {
-            Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("名称") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-                if (objectives.isEmpty()) {
-                    Text("请先创建目标", style = MaterialTheme.typography.bodySmall, color = LocalVisTokens.current.textTertiary)
-                } else {
-                    LazyColumn(Modifier.height(240.dp)) {
-                        items(objectives) { o ->
-                            val checked = selected.value.contains(o.id)
-                            Row(
-                                Modifier.fillMaxWidth().clickable {
-                                    selected.value = if (checked) selected.value - o.id else selected.value + o.id
-                                }.padding(vertical = 6.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                Checkbox(checked = checked, onCheckedChange = {
-                                    selected.value = if (checked) selected.value - o.id else selected.value + o.id
-                                })
-                                Text(o.title, style = MaterialTheme.typography.bodyMedium, maxLines = 1, modifier = Modifier.weight(1f))
-                            }
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+    ) {
+        Column(
+            Modifier.fillMaxWidth().padding(horizontal = 20.dp).padding(bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Text("新建专注周期", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
+            OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("名称") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+            if (objectives.isEmpty()) {
+                Text("请先创建目标", style = MaterialTheme.typography.bodySmall, color = LocalVisTokens.current.textTertiary)
+            } else {
+                LazyColumn(Modifier.height(240.dp)) {
+                    items(objectives) { o ->
+                        val checked = selected.value.contains(o.id)
+                        Row(
+                            Modifier.fillMaxWidth().clickable {
+                                selected.value = if (checked) selected.value - o.id else selected.value + o.id
+                            }.padding(vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Checkbox(checked = checked, onCheckedChange = {
+                                selected.value = if (checked) selected.value - o.id else selected.value + o.id
+                            })
+                            Text(o.title, style = MaterialTheme.typography.bodyMedium, maxLines = 1, modifier = Modifier.weight(1f))
                         }
                     }
                 }
             }
-        },
-        confirmButton = {
-            TextButton(
-                onClick = { onCreate(name.ifBlank { "专注周期" }, selected.value.toList()) },
-                enabled = selected.value.isNotEmpty(),
-            ) { Text("确定") }
-        },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("取消") } },
-    )
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                TextButton(onClick = onDismiss) { Text("取消") }
+                Spacer(Modifier.size(8.dp))
+                TextButton(
+                    onClick = { onCreate(name.ifBlank { "专注周期" }, selected.value.toList()) },
+                    enabled = selected.value.isNotEmpty(),
+                ) { Text("确定") }
+            }
+        }
+    }
 }

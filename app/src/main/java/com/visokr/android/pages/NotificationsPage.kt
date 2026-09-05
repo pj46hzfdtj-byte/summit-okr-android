@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -20,8 +21,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -42,6 +43,7 @@ import com.visokr.android.ui.LoadingView
 import com.visokr.android.ui.LocalVisTokens
 import com.visokr.android.ui.PillTag
 import com.visokr.android.ui.VisCard
+import com.visokr.android.ui.VisTopBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,7 +55,7 @@ fun NotificationsPage(navController: NavController) {
     Scaffold(
         containerColor = if (t.macos) Color.Transparent else t.bg,
         topBar = {
-            TopAppBar(
+            VisTopBar(
                 title = { Text("通知", fontWeight = FontWeight.Bold) },
                 navigationIcon = { IconButton(onClick = { navController.popBackStack() }) { Icon(Icons.Outlined.ArrowBack, null) } },
                 actions = {
@@ -63,12 +65,13 @@ fun NotificationsPage(navController: NavController) {
             )
         },
     ) { padding ->
+      PullToRefreshBox(onRefresh = { vm.refresh() }, isRefreshing = false, modifier = Modifier.padding(padding).fillMaxSize()) {
         when (val s = data) {
-            is UiState.Loading -> LoadingView(Modifier.padding(padding))
-            is UiState.Error -> ErrorView(s.message, onRetry = { vm.refresh() }, modifier = Modifier.padding(padding))
+            is UiState.Loading -> LoadingView()
+            is UiState.Error -> ErrorView(s.message, onRetry = { vm.refresh() })
             is UiState.Success -> {
-                if (s.data.list.isEmpty()) EmptyState("暂无通知", Modifier.padding(padding))
-                else LazyColumn(modifier = Modifier.padding(padding), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (s.data.list.isEmpty()) EmptyState("暂无通知")
+                else LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(s.data.list) { n ->
                         VisCard(modifier = Modifier.fillMaxWidth()) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -83,6 +86,7 @@ fun NotificationsPage(navController: NavController) {
                 }
             }
         }
+      }
     }
 }
 

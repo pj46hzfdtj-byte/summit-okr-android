@@ -181,6 +181,12 @@ class GoalDetailVM(val objectiveId: String) : ViewModel() {
             }
         }
     }
+
+    fun deleteKeyResult(keyResultId: String) {
+        viewModelScope.launch {
+            try { NetClient.api.deleteKeyResult(keyResultId).unwrapOrNull(); refresh() } catch (_: Exception) {}
+        }
+    }
 }
 
 class TasksVM : ViewModel() {

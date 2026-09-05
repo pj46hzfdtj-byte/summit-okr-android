@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -85,6 +86,28 @@ fun VisCard(
             .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
     ) {
         Column(Modifier.padding(contentPadding)) { content() }
+    }
+}
+
+/** 统一顶栏：macOS 主题下标题居中（对齐 Flutter appBarTheme.centerTitle: macos） */
+@androidx.compose.material3.ExperimentalMaterial3Api
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@Composable
+fun VisTopBar(
+    title: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
+    navigationIcon: @Composable () -> Unit = {},
+    actions: @Composable RowScope.() -> Unit = {},
+    colors: androidx.compose.material3.TopAppBarColors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(),
+) {
+    if (LocalVisTokens.current.macos) {
+        androidx.compose.material3.CenterAlignedTopAppBar(
+            title = title, modifier = modifier, navigationIcon = navigationIcon, actions = actions, colors = colors,
+        )
+    } else {
+        androidx.compose.material3.TopAppBar(
+            title = title, modifier = modifier, navigationIcon = navigationIcon, actions = actions, colors = colors,
+        )
     }
 }
 

@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -29,18 +30,25 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -67,6 +75,7 @@ import com.visokr.android.ui.LoadingView
 import com.visokr.android.ui.LocalVisTokens
 import com.visokr.android.ui.PillTag
 import com.visokr.android.ui.VisCard
+import com.visokr.android.ui.VisTopBar
 import com.visokr.android.ui.parseHexColor
 import java.time.Instant
 import java.time.ZoneId
@@ -86,7 +95,7 @@ fun GoalDetailPage(objectiveId: String, navController: NavController) {
     Scaffold(
         containerColor = if (t.macos) Color.Transparent else t.bg,
         topBar = {
-            TopAppBar(
+            VisTopBar(
                 title = { Text("目标详情", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) { Icon(Icons.Outlined.ArrowBack, null) }
@@ -95,11 +104,11 @@ fun GoalDetailPage(objectiveId: String, navController: NavController) {
             )
         },
     ) { padding ->
+      PullToRefreshBox(onRefresh = { vm.refresh() }, isRefreshing = false, modifier = Modifier.padding(padding).fillMaxSize()) {
         when (val s = detail) {
-            is UiState.Loading -> LoadingView(Modifier.padding(padding))
-            is UiState.Error -> ErrorView(s.message, onRetry = { vm.refresh() }, modifier = Modifier.padding(padding))
+            is UiState.Loading -> LoadingView()
+            is UiState.Error -> ErrorView(s.message, onRetry = { vm.refresh() })
             is UiState.Success -> LazyColumn(
-                modifier = Modifier.padding(padding),
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
@@ -117,7 +126,26 @@ fun GoalDetailPage(objectiveId: String, navController: NavController) {
                         val span = kr.targetValue - kr.initialValue
                         if (span == 0.0) 0.0 else ((kr.currentValue - kr.initialValue) / span)
                     }).coerceIn(0.0, 1.0)
-                    VisCard(modifier = Modifier.fillMaxWidth()) {
+                    // 对齐 Flutter Dismissible：KR 行滑动删除（确认后调 deleteKeyResult）
+                    val dismissState = rememberSwipeToDismissBoxState()
+                    var confirmDelete by remember(kr.id) { mutableStateOf(false) }
+                    val dismissScope = rememberCoroutineScope()
+                    SwipeToDismissBox(
+                        state = dismissState,
+                        enableDismissFromStartToEnd = false,
+                        backgroundContent = {
+                            Box(
+                                Modifier.fillMaxWidth().clip(RoundedCornerShape(t.radiusCard))
+                                    .background(MaterialTheme.colorScheme.errorContainer)
+                                    .padding(horizontal = 20.dp),
+                                contentAlignment = Alignment.CenterEnd,
+                            ) {
+                                Icon(Icons.Outlined.DeleteOutline, null, tint = MaterialTheme.colorScheme.onErrorContainer)
+                            }
+                        },
+                        onDismiss = { if (it != SwipeToDismissBoxValue.Settled) confirmDelete = true },
+                    ) {
+                        VisCard(modifier = Modifier.fillMaxWidth()) {
                         Column {
                             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickableRow { expanded = !expanded }) {
                                 Text(kr.emoji, fontSize = 18.sp)
@@ -150,20 +178,38 @@ fun GoalDetailPage(objectiveId: String, navController: NavController) {
                                 }
                             }
                         }
-                        if (showRecord) {
-                            RecordDialog(kr.title, kr.currentValue, onDismiss = { showRecord = false }) { value, note ->
-                                vm.addRecord(kr.id, value, note)
-                                showRecord = false
-                            }
+                    }
+                    }
+                    // 弹层与对话框移出 VisCard，避免影响卡片布局
+                    if (showRecord) {
+                        RecordSheet(kr.title, kr.currentValue, onDismiss = { showRecord = false }) { value, note ->
+                            vm.addRecord(kr.id, value, note)
+                            showRecord = false
                         }
-                        if (showMemos) {
-                            MemoSheet(kr.id) { showMemos = false }
-                        }
+                    }
+                    if (showMemos) {
+                        MemoSheet(kr.id) { showMemos = false }
+                    }
+                    if (confirmDelete) {
+                        AlertDialog(
+                            onDismissRequest = { confirmDelete = false; dismissScope.launch { dismissState.reset() } },
+                            title = { Text("删除关键结果") },
+                            text = { Text("确定删除「${kr.title}」？将移入回收站。") },
+                            confirmButton = {
+                                TextButton(onClick = { confirmDelete = false; vm.deleteKeyResult(kr.id) }) {
+                                    Text("删除", color = MaterialTheme.colorScheme.error)
+                                }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = { confirmDelete = false; dismissScope.launch { dismissState.reset() } }) { Text("取消") }
+                            },
+                        )
                     }
                 }
                 item { Spacer(Modifier.height(24.dp)) }
             }
         }
+      }
     }
 }
 
@@ -244,31 +290,38 @@ private fun TrendChart(points: List<TrendPoint>, color: Color) {
     }
 }
 
+/** KR 记录：底部弹层（对齐 Flutter showModalBottomSheet） */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun RecordDialog(title: String, current: Double, onDismiss: () -> Unit, onSave: (Double, String?) -> Unit) {
+private fun RecordSheet(title: String, current: Double, onDismiss: () -> Unit, onSave: (Double, String?) -> Unit) {
     var value by remember { mutableStateOf(current.toString()) }
     var note by remember { mutableStateOf("") }
-    AlertDialog(
-        onDismissRequest = { },
-        title = { Text(title, fontSize = 16.sp, fontWeight = FontWeight.Bold) },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                OutlinedTextField(
-                    value = value,
-                    onValueChange = { value = it },
-                    label = { Text("数值") },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                OutlinedTextField(value = note, onValueChange = { note = it }, label = { Text("备注（可选）") }, modifier = Modifier.fillMaxWidth())
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+    ) {
+        Column(
+            Modifier.fillMaxWidth().padding(horizontal = 20.dp).padding(bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Text(title, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            OutlinedTextField(
+                value = value,
+                onValueChange = { value = it },
+                label = { Text("数值") },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                modifier = Modifier.fillMaxWidth(),
+            )
+            OutlinedTextField(value = note, onValueChange = { note = it }, label = { Text("备注（可选）") }, modifier = Modifier.fillMaxWidth())
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                TextButton(onClick = onDismiss) { Text("取消") }
+                Spacer(Modifier.size(8.dp))
+                TextButton(onClick = { val v = value.toDoubleOrNull(); if (v != null) onSave(v, note.ifBlank { null }) }) { Text("保存") }
             }
-        },
-        confirmButton = {
-            TextButton(onClick = { val v = value.toDoubleOrNull(); if (v != null) onSave(v, note.ifBlank { null }) }) { Text("保存") }
-        },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("取消") } },
-    )
+        }
+    }
 }
 
 @Composable

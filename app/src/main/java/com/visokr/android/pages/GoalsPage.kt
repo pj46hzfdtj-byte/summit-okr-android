@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -55,6 +56,7 @@ import com.visokr.android.ui.LoadingView
 import com.visokr.android.ui.LocalVisTokens
 import com.visokr.android.ui.PillTag
 import com.visokr.android.ui.VisCard
+import com.visokr.android.ui.VisTopBar
 import com.visokr.android.ui.parseHexColor
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -67,7 +69,7 @@ fun GoalsPage(navController: NavController) {
     Scaffold(
         containerColor = if (t.macos) Color.Transparent else t.bg,
         topBar = {
-            TopAppBar(
+            VisTopBar(
                 title = { Text("目标库", fontWeight = FontWeight.Bold) },
                 actions = {
                     IconButton(onClick = { navController.navigate(Routes.GANTT) }) { Icon(Icons.Outlined.Timeline, "甘特图") }
@@ -86,7 +88,7 @@ fun GoalsPage(navController: NavController) {
             )
         },
     ) { padding ->
-        PullToRefreshBox(onRefresh = { vm.refresh() }, isRefreshing = false, modifier = Modifier.padding(padding)) {
+        PullToRefreshBox(onRefresh = { vm.refresh() }, isRefreshing = false, modifier = Modifier.padding(padding).fillMaxSize()) {
             when (val s = tree) {
                 is UiState.Loading -> LoadingView()
                 is UiState.Error -> ErrorView(s.message, onRetry = { vm.refresh() })

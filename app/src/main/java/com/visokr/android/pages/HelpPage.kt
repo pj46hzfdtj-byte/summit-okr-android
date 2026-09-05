@@ -46,6 +46,7 @@ import com.visokr.android.core.NetClient
 import com.visokr.android.core.unwrapOrNull
 import com.visokr.android.ui.LocalVisTokens
 import com.visokr.android.ui.VisCard
+import com.visokr.android.ui.VisTopBar
 import kotlinx.coroutines.launch
 
 private val faqs = listOf(
@@ -68,7 +69,7 @@ fun HelpPage(navController: NavController) {
     Scaffold(
         containerColor = if (t.macos) Color.Transparent else t.bg,
         topBar = {
-            TopAppBar(
+            VisTopBar(
                 title = { Text("帮助与反馈", fontWeight = FontWeight.Bold) },
                 navigationIcon = { IconButton(onClick = { navController.popBackStack() }) { Icon(Icons.Outlined.ArrowBack, null) } },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = if (t.macos) Color.Transparent else MaterialTheme.colorScheme.surface),

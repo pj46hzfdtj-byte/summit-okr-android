@@ -6,12 +6,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.ArrowBack
@@ -22,6 +25,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
@@ -29,11 +33,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,6 +67,7 @@ import com.visokr.android.ui.LoadingView
 import com.visokr.android.ui.LocalVisTokens
 import com.visokr.android.ui.PillTag
 import com.visokr.android.ui.VisCard
+import com.visokr.android.ui.VisTopBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,7 +81,7 @@ fun ReviewsPage(navController: NavController) {
     Scaffold(
         containerColor = if (t.macos) Color.Transparent else t.bg,
         topBar = {
-            TopAppBar(
+            VisTopBar(
                 title = { Text("复盘", fontWeight = FontWeight.Bold) },
                 navigationIcon = { IconButton(onClick = { navController.popBackStack() }) { Icon(Icons.Outlined.ArrowBack, null) } },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = if (t.macos) Color.Transparent else MaterialTheme.colorScheme.surface),
@@ -85,13 +93,13 @@ fun ReviewsPage(navController: NavController) {
             }
         },
     ) { padding ->
+      PullToRefreshBox(onRefresh = { vm.refresh() }, isRefreshing = false, modifier = Modifier.padding(padding)) {
         when (val s = reviews) {
-            is UiState.Loading -> LoadingView(Modifier.padding(padding))
-            is UiState.Error -> ErrorView(s.message, onRetry = { vm.refresh() }, modifier = Modifier.padding(padding))
+            is UiState.Loading -> LoadingView()
+            is UiState.Error -> ErrorView(s.message, onRetry = { vm.refresh() })
             is UiState.Success -> {
-                if (s.data.isEmpty()) EmptyState("暂无复盘", Modifier.padding(padding), icon = Icons.Outlined.RateReview)
+                if (s.data.isEmpty()) EmptyState("暂无复盘", icon = Icons.Outlined.RateReview)
                 else LazyColumn(
-                    modifier = Modifier.padding(padding),
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
@@ -100,6 +108,7 @@ fun ReviewsPage(navController: NavController) {
                 }
             }
         }
+      }
     }
 
     if (picking) {
@@ -174,6 +183,7 @@ private fun ObjectivePickerDialog(onDismiss: () -> Unit, onPick: (Objective) -> 
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ReviewFormDialog(obj: Objective, onDismiss: () -> Unit, onSave: (CreateReviewReq) -> Unit) {
     var selfRating by remember { mutableStateOf(70f) }
@@ -184,38 +194,44 @@ private fun ReviewFormDialog(obj: Objective, onDismiss: () -> Unit, onSave: (Cre
     androidx.compose.runtime.LaunchedEffect(obj.id) {
         runCatching { krs = NetClient.api.keyResults(obj.id).unwrap() }
     }
-    AlertDialog(
+    // 对齐 Flutter：复盘创建用底部弹层
+    ModalBottomSheet(
         onDismissRequest = onDismiss,
-        title = { Text("新建复盘：${obj.title.take(14)}", fontWeight = FontWeight.Bold, fontSize = 16.sp) },
-        text = {
-            Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    listOf("midterm" to "期中", "final" to "期末").forEach { (v, l) ->
-                        TextButton(onClick = { type = v }) {
-                            Text(l, color = if (type == v) MaterialTheme.colorScheme.primary else LocalVisTokens.current.textTertiary, fontWeight = if (type == v) FontWeight.Bold else null)
-                        }
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+    ) {
+        Column(
+            Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = 20.dp).padding(bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text("新建复盘：${obj.title.take(14)}", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf("midterm" to "期中", "final" to "期末").forEach { (v, l) ->
+                    TextButton(onClick = { type = v }) {
+                        Text(l, color = if (type == v) MaterialTheme.colorScheme.primary else LocalVisTokens.current.textTertiary, fontWeight = if (type == v) FontWeight.Bold else null)
                     }
                 }
-                Text("自评（70 分为健康线）", style = MaterialTheme.typography.bodySmall)
-                Slider(value = selfRating, onValueChange = { selfRating = it }, valueRange = 0f..100f)
-                Text("${selfRating.toInt()} 分", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
-                krs?.forEach { kr ->
-                    val cur = (krScores[kr.id] ?: 70.0).toFloat()
-                    Column {
-                        Text("${kr.emoji} ${kr.title}", style = MaterialTheme.typography.bodySmall, maxLines = 1)
-                        Slider(value = cur, onValueChange = { krScores = krScores + (kr.id to it.toDouble()) })
-                        Text("${cur.toInt()} 分", fontSize = 11.sp, color = LocalVisTokens.current.textTertiary)
-                    }
-                }
-                OutlinedTextField(value = thoughts, onValueChange = { thoughts = it }, label = { Text("思考（可选）") }, modifier = Modifier.fillMaxWidth())
             }
-        },
-        confirmButton = {
-            TextButton(onClick = {
-                val scores = (krs ?: emptyList()).map { KrScore(it.id, krScores[it.id] ?: 70.0) }
-                onSave(CreateReviewReq(obj.id, type, scores, selfRating.toDouble(), thoughts = thoughts.ifBlank { null }))
-            }) { Text("提交") }
-        },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("取消") } },
-    )
+            Text("自评（70 分为健康线）", style = MaterialTheme.typography.bodySmall)
+            Slider(value = selfRating, onValueChange = { selfRating = it }, valueRange = 0f..100f)
+            Text("${selfRating.toInt()} 分", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+            krs?.forEach { kr ->
+                val cur = (krScores[kr.id] ?: 70.0).toFloat()
+                Column {
+                    Text("${kr.emoji} ${kr.title}", style = MaterialTheme.typography.bodySmall, maxLines = 1)
+                    Slider(value = cur, onValueChange = { krScores = krScores + (kr.id to it.toDouble()) })
+                    Text("${cur.toInt()} 分", fontSize = 11.sp, color = LocalVisTokens.current.textTertiary)
+                }
+            }
+            OutlinedTextField(value = thoughts, onValueChange = { thoughts = it }, label = { Text("思考（可选）") }, modifier = Modifier.fillMaxWidth())
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                TextButton(onClick = onDismiss) { Text("取消") }
+                Spacer(Modifier.size(8.dp))
+                TextButton(onClick = {
+                    val scores = (krs ?: emptyList()).map { KrScore(it.id, krScores[it.id] ?: 70.0) }
+                    onSave(CreateReviewReq(obj.id, type, scores, selfRating.toDouble(), thoughts = thoughts.ifBlank { null }))
+                }) { Text("提交") }
+            }
+        }
+    }
 }
