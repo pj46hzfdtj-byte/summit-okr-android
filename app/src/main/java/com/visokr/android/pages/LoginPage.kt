@@ -202,14 +202,21 @@ fun LoginPage(onLoggedIn: () -> Unit) {
                     }
                 }
                 Spacer(Modifier.height(16.dp))
-                Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
                     Text(
                         if (register) "已有账号？" else "还没有账号？",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-                    TextButton(onClick = { register = !register }) {
-                        Text(if (register) "登录" else "注册")
+                    TextButton(
+                        onClick = { register = !register },
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 4.dp, vertical = 0.dp),
+                    ) {
+                        Text(if (register) "登录" else "注册", style = MaterialTheme.typography.bodyMedium)
                     }
                 }
                 Spacer(Modifier.height(4.dp))
