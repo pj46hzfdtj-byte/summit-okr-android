@@ -166,6 +166,8 @@ private fun ShellScaffold(
     }
     Scaffold(
         containerColor = if (t.macos) androidx.compose.ui.graphics.Color.Transparent else t.bg,
+        // 外层不再消费状态栏 inset：内页 TopAppBar 自行加 statusBarsPadding，避免双层叠加导致头部过高
+        contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0),
         bottomBar = {
             if (t.macos) {
                 Box(

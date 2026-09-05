@@ -25,10 +25,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -64,22 +62,11 @@ fun VisCard(
 ) {
     val t = LocalVisTokens.current
     val shape = RoundedCornerShape(t.radiusCard)
-    val shadowElev = if (t.macos) 4f else 2f
-    val shadowAlpha = if (t.macos) 0.07f else 0.04f
+    // 柔和投影（对齐 Flutter：通用 elevation≈2 / macOS≈4），用原生 shadow 避免描边伪影
+    val shadowElev = if (t.macos) 4.dp else 2.dp
     Box(
         modifier
-            .drawBehind {
-                val r = CornerRadius(t.radiusCard.toPx(), t.radiusCard.toPx())
-                // 简化阴影：多层描边模拟柔和投影
-                for (i in 1..3) {
-                    drawRoundRect(
-                        color = Color.Black.copy(alpha = shadowAlpha / i),
-                        topLeft = androidx.compose.ui.geometry.Offset(0f, shadowElev * i / 2f),
-                        cornerRadius = r,
-                        style = Stroke(width = shadowElev),
-                    )
-                }
-            }
+            .shadow(shadowElev, shape, clip = false)
             .clip(shape)
             .background(visCardColor())
             .border(visCardBorder().width, visCardBorder().brush, shape)

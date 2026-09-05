@@ -133,6 +133,7 @@ fun GoalDetailPage(objectiveId: String, navController: NavController) {
                     SwipeToDismissBox(
                         state = dismissState,
                         enableDismissFromStartToEnd = false,
+                        modifier = Modifier.clip(RoundedCornerShape(t.radiusCard)),
                         backgroundContent = {
                             Box(
                                 Modifier.fillMaxWidth().clip(RoundedCornerShape(t.radiusCard))
