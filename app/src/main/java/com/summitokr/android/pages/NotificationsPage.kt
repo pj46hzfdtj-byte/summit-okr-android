@@ -1,4 +1,4 @@
-package com.visokr.android.pages
+package com.summitokr.android.pages
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -34,28 +34,28 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.visokr.android.core.NotifVM
-import com.visokr.android.core.Routes
-import com.visokr.android.core.UiState
-import com.visokr.android.ui.EmptyState
-import com.visokr.android.ui.ErrorView
-import com.visokr.android.ui.LoadingView
-import com.visokr.android.ui.LocalVisTokens
-import com.visokr.android.ui.PillTag
-import com.visokr.android.ui.VisCard
-import com.visokr.android.ui.VisTopBar
+import com.summitokr.android.core.NotifVM
+import com.summitokr.android.core.Routes
+import com.summitokr.android.core.UiState
+import com.summitokr.android.ui.EmptyState
+import com.summitokr.android.ui.ErrorView
+import com.summitokr.android.ui.LoadingView
+import com.summitokr.android.ui.LocalSummitTokens
+import com.summitokr.android.ui.PillTag
+import com.summitokr.android.ui.SummitCard
+import com.summitokr.android.ui.SummitTopBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NotificationsPage(navController: NavController) {
     val vm: NotifVM = viewModel()
     val data by vm.data.collectAsState()
-    val t = LocalVisTokens.current
+    val t = LocalSummitTokens.current
 
     Scaffold(
         containerColor = if (t.macos) Color.Transparent else t.bg,
         topBar = {
-            VisTopBar(
+            SummitTopBar(
                 title = { Text("通知", fontWeight = FontWeight.Bold) },
                 navigationIcon = { IconButton(onClick = { navController.popBackStack() }) { Icon(Icons.Outlined.ArrowBack, null) } },
                 actions = {
@@ -73,7 +73,7 @@ fun NotificationsPage(navController: NavController) {
                 if (s.data.list.isEmpty()) EmptyState("暂无通知")
                 else LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(s.data.list) { n ->
-                        VisCard(modifier = Modifier.fillMaxWidth()) {
+                        SummitCard(modifier = Modifier.fillMaxWidth()) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Column(Modifier.weight(1f)) {
                                     Text(notifTitle(n.type), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)

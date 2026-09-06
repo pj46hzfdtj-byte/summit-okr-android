@@ -1,4 +1,4 @@
-package com.visokr.android.core
+package com.summitokr.android.core
 
 import retrofit2.Call
 import retrofit2.http.Body

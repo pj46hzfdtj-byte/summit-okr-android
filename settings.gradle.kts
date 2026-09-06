@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "VisOkrAndroid"
+rootProject.name = "SummitOkrAndroid"
 include(":app")

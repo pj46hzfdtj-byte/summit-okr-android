@@ -1,4 +1,4 @@
-package com.visokr.android.pages
+package com.summitokr.android.pages
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -51,28 +51,28 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.visokr.android.core.AiMotivationsReq
-import com.visokr.android.core.AiPlanGoalReq
-import com.visokr.android.core.AiPlanGoalResult
-import com.visokr.android.core.AiPlanTaskResult
-import com.visokr.android.core.AiPlanTasksReq
-import com.visokr.android.core.AiSuggestScoreReq
-import com.visokr.android.core.AiSuggestScoreResult
-import com.visokr.android.core.AiVM
-import com.visokr.android.core.CreateKeyResultReq
-import com.visokr.android.core.CreateObjectiveReq
-import com.visokr.android.core.CreateTaskReq
-import com.visokr.android.core.GoalGroup
-import com.visokr.android.core.GoalsVM
-import com.visokr.android.core.NetClient
-import com.visokr.android.core.Objective
-import com.visokr.android.core.Routes
-import com.visokr.android.core.UiState
-import com.visokr.android.core.unwrap
-import com.visokr.android.core.unwrapOrNull
-import com.visokr.android.ui.LocalVisTokens
-import com.visokr.android.ui.VisCard
-import com.visokr.android.ui.VisTopBar
+import com.summitokr.android.core.AiMotivationsReq
+import com.summitokr.android.core.AiPlanGoalReq
+import com.summitokr.android.core.AiPlanGoalResult
+import com.summitokr.android.core.AiPlanTaskResult
+import com.summitokr.android.core.AiPlanTasksReq
+import com.summitokr.android.core.AiSuggestScoreReq
+import com.summitokr.android.core.AiSuggestScoreResult
+import com.summitokr.android.core.AiVM
+import com.summitokr.android.core.CreateKeyResultReq
+import com.summitokr.android.core.CreateObjectiveReq
+import com.summitokr.android.core.CreateTaskReq
+import com.summitokr.android.core.GoalGroup
+import com.summitokr.android.core.GoalsVM
+import com.summitokr.android.core.NetClient
+import com.summitokr.android.core.Objective
+import com.summitokr.android.core.Routes
+import com.summitokr.android.core.UiState
+import com.summitokr.android.core.unwrap
+import com.summitokr.android.core.unwrapOrNull
+import com.summitokr.android.ui.LocalSummitTokens
+import com.summitokr.android.ui.SummitCard
+import com.summitokr.android.ui.SummitTopBar
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -80,14 +80,14 @@ import kotlinx.coroutines.launch
 fun AiPage(navController: NavController) {
     val vm: AiVM = viewModel()
     val usage by vm.usage.collectAsState()
-    val t = LocalVisTokens.current
+    val t = LocalSummitTokens.current
     var tab by remember { mutableIntStateOf(0) }
     val tabs = listOf("规划目标", "拆解任务", "复盘评分", "动机建议")
 
     Scaffold(
         containerColor = if (t.macos) Color.Transparent else t.bg,
         topBar = {
-            VisTopBar(
+            SummitTopBar(
                 title = { Text("AI 助手", fontWeight = FontWeight.Bold) },
                 navigationIcon = { IconButton(onClick = { navController.popBackStack() }) { Icon(Icons.Outlined.ArrowBack, null) } },
                 actions = {
@@ -182,7 +182,7 @@ private fun PlanGoalTab(vm: AiVM, navController: NavController) {
                     Checkbox(checked = sel, onCheckedChange = { checked.value = if (sel) checked.value - i else checked.value + i })
                     Column {
                         Text(kr.title, fontSize = 13.sp)
-                        Text("${fmtNum(kr.initialValue)} → ${fmtNum(kr.targetValue)}", fontSize = 11.sp, color = LocalVisTokens.current.textTertiary)
+                        Text("${fmtNum(kr.initialValue)} → ${fmtNum(kr.targetValue)}", fontSize = 11.sp, color = LocalSummitTokens.current.textTertiary)
                     }
                 }
             }
@@ -265,7 +265,7 @@ private fun PlanTasksTab(vm: AiVM, navController: NavController) {
                     Checkbox(checked = sel, onCheckedChange = { checked.value = if (sel) checked.value - i else checked.value + i })
                     Column {
                         Text(task.title, fontSize = 13.sp)
-                        task.contribution?.let { Text(it, fontSize = 11.sp, color = LocalVisTokens.current.textTertiary) }
+                        task.contribution?.let { Text(it, fontSize = 11.sp, color = LocalSummitTokens.current.textTertiary) }
                     }
                 }
             }
@@ -307,7 +307,7 @@ private fun ScoreTab(vm: AiVM) {
     var picked by remember { mutableStateOf<Objective?>(null) }
     var expanded by remember { mutableStateOf(false) }
     var result by remember { mutableStateOf<AiSuggestScoreResult?>(null) }
-    val t = LocalVisTokens.current
+    val t = LocalSummitTokens.current
 
     Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
@@ -328,7 +328,7 @@ private fun ScoreTab(vm: AiVM) {
             }
         }
         result?.let { r ->
-            VisCard(modifier = Modifier.fillMaxWidth()) {
+            SummitCard(modifier = Modifier.fillMaxWidth()) {
                 Column {
                     Text("建议自评：${r.selfRating.toInt()} 分", style = MaterialTheme.typography.titleSmall)
                     r.krScores.forEach { kr ->
@@ -350,7 +350,7 @@ private fun ScoreTab(vm: AiVM) {
 private fun MotivateTab(vm: AiVM) {
     var input by remember { mutableStateOf("") }
     var result by remember { mutableStateOf<List<String>?>(null) }
-    val t = LocalVisTokens.current
+    val t = LocalSummitTokens.current
 
     Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         OutlinedTextField(
@@ -365,7 +365,7 @@ private fun MotivateTab(vm: AiVM) {
             }
         }
         result?.forEach { m ->
-            VisCard(modifier = Modifier.fillMaxWidth()) {
+            SummitCard(modifier = Modifier.fillMaxWidth()) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Outlined.FavoriteBorder, null, tint = t.danger, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.size(10.dp))

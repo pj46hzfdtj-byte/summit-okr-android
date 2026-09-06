@@ -1,4 +1,4 @@
-package com.visokr.android.pages
+package com.summitokr.android.pages
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -40,15 +40,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.visokr.android.core.GanttVM
-import com.visokr.android.core.UiState
-import com.visokr.android.core.normProgress
-import com.visokr.android.ui.EmptyState
-import com.visokr.android.ui.ErrorView
-import com.visokr.android.ui.LoadingView
-import com.visokr.android.ui.LocalVisTokens
-import com.visokr.android.ui.VisTopBar
-import com.visokr.android.ui.parseHexColor
+import com.summitokr.android.core.GanttVM
+import com.summitokr.android.core.UiState
+import com.summitokr.android.core.normProgress
+import com.summitokr.android.ui.EmptyState
+import com.summitokr.android.ui.ErrorView
+import com.summitokr.android.ui.LoadingView
+import com.summitokr.android.ui.LocalSummitTokens
+import com.summitokr.android.ui.SummitTopBar
+import com.summitokr.android.ui.parseHexColor
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -61,12 +61,12 @@ private const val PX_PER_DAY = 12f
 fun GanttPage(navController: NavController) {
     val vm: GanttVM = viewModel()
     val data by vm.data.collectAsState()
-    val t = LocalVisTokens.current
+    val t = LocalSummitTokens.current
 
     Scaffold(
         containerColor = if (t.macos) Color.Transparent else t.bg,
         topBar = {
-            VisTopBar(
+            SummitTopBar(
                 title = { Text("甘特图", fontWeight = FontWeight.Bold) },
                 navigationIcon = { IconButton(onClick = { navController.popBackStack() }) { Icon(Icons.Outlined.ArrowBack, null) } },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = if (t.macos) Color.Transparent else MaterialTheme.colorScheme.surface),

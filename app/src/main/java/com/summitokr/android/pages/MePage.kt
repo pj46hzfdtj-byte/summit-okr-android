@@ -1,4 +1,4 @@
-package com.visokr.android.pages
+package com.summitokr.android.pages
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -59,14 +59,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.visokr.android.core.AuthVM
-import com.visokr.android.core.NetClient
-import com.visokr.android.core.Prefs
-import com.visokr.android.core.Routes
-import com.visokr.android.ui.LocalVisTokens
-import com.visokr.android.ui.VisCard
-import com.visokr.android.ui.VisSeeds
-import com.visokr.android.ui.VisTopBar
+import com.summitokr.android.core.AuthVM
+import com.summitokr.android.core.NetClient
+import com.summitokr.android.core.Prefs
+import com.summitokr.android.core.Routes
+import com.summitokr.android.ui.LocalSummitTokens
+import com.summitokr.android.ui.SummitCard
+import com.summitokr.android.ui.SummitSeeds
+import com.summitokr.android.ui.SummitTopBar
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -76,13 +76,13 @@ fun MePage(navController: NavController) {
     val scope = rememberCoroutineScope()
     val prefs = Prefs.flow(context).collectAsState(initial = Prefs.Ui())
     val authVM: AuthVM = viewModel()
-    val t = LocalVisTokens.current
+    val t = LocalSummitTokens.current
     var showServer by remember { mutableStateOf(false) }
 
     Scaffold(
         containerColor = if (t.macos) Color.Transparent else t.bg,
         topBar = {
-            VisTopBar(
+            SummitTopBar(
                 title = { Text("我的", fontWeight = FontWeight.Bold) },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = if (t.macos) Color.Transparent else MaterialTheme.colorScheme.surface),
             )
@@ -94,7 +94,7 @@ fun MePage(navController: NavController) {
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             item {
-                VisCard(modifier = Modifier.fillMaxWidth()) {
+                SummitCard(modifier = Modifier.fillMaxWidth()) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Box(
                             Modifier.size(44.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer),
@@ -104,8 +104,8 @@ fun MePage(navController: NavController) {
                         }
                         Spacer(Modifier.size(12.dp))
                         Column(Modifier.weight(1f)) {
-                            Text("VIS OKR 用户", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
-                            Text("demo@visokr.com", style = MaterialTheme.typography.bodySmall, color = t.textTertiary)
+                            Text("Summit OKR 用户", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+                            Text("demo@summitokr.com", style = MaterialTheme.typography.bodySmall, color = t.textTertiary)
                         }
                         TextButton(onClick = {
                             authVM.logout()
@@ -137,19 +137,19 @@ fun MePage(navController: NavController) {
                     Text("配色主题", style = MaterialTheme.typography.labelLarge)
                     Spacer(Modifier.height(8.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-                        VisSeeds.all.forEach { seed ->
+                        SummitSeeds.all.forEach { seed ->
                             val selected = prefs.value.themeSeed == seed
                             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.clickable {
                                 scope.launch { Prefs.setThemeSeed(context, seed) }
                             }) {
                                 Box(
-                                    Modifier.size(34.dp).clip(CircleShape).background(VisSeeds.preview[seed] ?: Color.Gray),
+                                    Modifier.size(34.dp).clip(CircleShape).background(SummitSeeds.preview[seed] ?: Color.Gray),
                                     contentAlignment = Alignment.Center,
                                 ) {
                                     if (selected) Icon(Icons.Filled.Check, null, tint = Color.White, modifier = Modifier.size(18.dp))
                                 }
                                 Spacer(Modifier.height(2.dp))
-                                Text(VisSeeds.labels[seed] ?: "", fontSize = 10.sp, color = t.textTertiary)
+                                Text(SummitSeeds.labels[seed] ?: "", fontSize = 10.sp, color = t.textTertiary)
                             }
                         }
                     }
@@ -210,7 +210,7 @@ fun MePage(navController: NavController) {
 
 @Composable
 private fun SectionCard(title: String, content: @Composable () -> Unit) {
-    VisCard(modifier = Modifier.fillMaxWidth()) {
+    SummitCard(modifier = Modifier.fillMaxWidth()) {
         Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(10.dp))
         content()
@@ -222,7 +222,7 @@ private fun AppearanceChip(label: String, value: String, icon: ImageVector, curr
     val selected = current == value
     Box(
         Modifier.clip(RoundedCornerShape(999.dp))
-            .background(if (selected) MaterialTheme.colorScheme.primaryContainer else LocalVisTokens.current.bg)
+            .background(if (selected) MaterialTheme.colorScheme.primaryContainer else LocalSummitTokens.current.bg)
             .clickable { onSelect(value) }
             .padding(horizontal = 12.dp, vertical = 7.dp),
     ) {
@@ -236,7 +236,7 @@ private fun AppearanceChip(label: String, value: String, icon: ImageVector, curr
 
 @Composable
 private fun NavTile(icon: ImageVector, label: String, onClick: () -> Unit) {
-    val t = LocalVisTokens.current
+    val t = LocalSummitTokens.current
     Row(
         Modifier.fillMaxWidth().clickable(onClick = onClick).padding(vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,

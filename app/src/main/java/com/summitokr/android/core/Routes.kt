@@ -1,4 +1,4 @@
-package com.visokr.android.core
+package com.summitokr.android.core
 
 object Routes {
     const val LOGIN = "login"

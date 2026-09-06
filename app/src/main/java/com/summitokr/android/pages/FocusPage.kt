@@ -1,4 +1,4 @@
-package com.visokr.android.pages
+package com.summitokr.android.pages
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -49,18 +49,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.visokr.android.core.FocusVM
-import com.visokr.android.core.GoalsVM
-import com.visokr.android.core.Objective
-import com.visokr.android.core.Routes
-import com.visokr.android.core.UiState
-import com.visokr.android.ui.EmptyState
-import com.visokr.android.ui.ErrorView
-import com.visokr.android.ui.LoadingView
-import com.visokr.android.ui.LocalVisTokens
-import com.visokr.android.ui.PillTag
-import com.visokr.android.ui.VisCard
-import com.visokr.android.ui.VisTopBar
+import com.summitokr.android.core.FocusVM
+import com.summitokr.android.core.GoalsVM
+import com.summitokr.android.core.Objective
+import com.summitokr.android.core.Routes
+import com.summitokr.android.core.UiState
+import com.summitokr.android.ui.EmptyState
+import com.summitokr.android.ui.ErrorView
+import com.summitokr.android.ui.LoadingView
+import com.summitokr.android.ui.LocalSummitTokens
+import com.summitokr.android.ui.PillTag
+import com.summitokr.android.ui.SummitCard
+import com.summitokr.android.ui.SummitTopBar
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -70,13 +70,13 @@ import java.time.format.DateTimeFormatter
 fun FocusPage(navController: NavController) {
     val vm: FocusVM = viewModel()
     val cycle by vm.cycle.collectAsState()
-    val t = LocalVisTokens.current
+    val t = LocalSummitTokens.current
     var showCreate by remember { mutableStateOf(false) }
 
     Scaffold(
         containerColor = if (t.macos) Color.Transparent else t.bg,
         topBar = {
-            VisTopBar(
+            SummitTopBar(
                 title = { Text("专注周期", fontWeight = FontWeight.Bold) },
                 navigationIcon = { IconButton(onClick = { navController.popBackStack() }) { Icon(Icons.Outlined.ArrowBack, null) } },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = if (t.macos) Color.Transparent else MaterialTheme.colorScheme.surface),
@@ -100,7 +100,7 @@ fun FocusPage(navController: NavController) {
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     item {
-                        VisCard(modifier = Modifier.fillMaxWidth()) {
+                        SummitCard(modifier = Modifier.fillMaxWidth()) {
                             Column {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Text(c.name, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
@@ -182,7 +182,7 @@ private fun CreateCycleSheet(onDismiss: () -> Unit, onCreate: (String, List<Stri
     val tree by goalsVM.tree.collectAsState()
     val objectives = remember(tree) {
         val list = ArrayList<Objective>()
-        fun walk(groups: List<com.visokr.android.core.GoalGroup>) {
+        fun walk(groups: List<com.summitokr.android.core.GoalGroup>) {
             groups.forEach { list.addAll(it.objectives); walk(it.children) }
         }
         (tree as? UiState.Success)?.data?.let { walk(it) }
@@ -203,7 +203,7 @@ private fun CreateCycleSheet(onDismiss: () -> Unit, onCreate: (String, List<Stri
             Text("新建专注周期", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
             OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("名称") }, singleLine = true, modifier = Modifier.fillMaxWidth())
             if (objectives.isEmpty()) {
-                Text("请先创建目标", style = MaterialTheme.typography.bodySmall, color = LocalVisTokens.current.textTertiary)
+                Text("请先创建目标", style = MaterialTheme.typography.bodySmall, color = LocalSummitTokens.current.textTertiary)
             } else {
                 LazyColumn(Modifier.height(240.dp)) {
                     items(objectives) { o ->

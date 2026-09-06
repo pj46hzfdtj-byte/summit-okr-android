@@ -1,4 +1,4 @@
-package com.visokr.android.ui
+package com.summitokr.android.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -54,13 +54,13 @@ fun parseHexColor(s: String?): Color {
 
 /** 规范卡片：底色 + 1px 描边 + 阴影（通用 0,2,12 .04 / macOS 0,4,20 .07） */
 @Composable
-fun VisCard(
+fun SummitCard(
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
     contentPadding: androidx.compose.foundation.layout.PaddingValues = androidx.compose.foundation.layout.PaddingValues(16.dp),
     content: @Composable () -> Unit,
 ) {
-    val t = LocalVisTokens.current
+    val t = LocalSummitTokens.current
     val shape = RoundedCornerShape(t.radiusCard)
     // 柔和投影（对齐 Flutter：通用 elevation≈2 / macOS≈4），用原生 shadow 避免描边伪影
     val shadowElev = if (t.macos) 4.dp else 2.dp
@@ -80,14 +80,14 @@ fun VisCard(
 @androidx.compose.material3.ExperimentalMaterial3Api
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
-fun VisTopBar(
+fun SummitTopBar(
     title: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     navigationIcon: @Composable () -> Unit = {},
     actions: @Composable RowScope.() -> Unit = {},
     colors: androidx.compose.material3.TopAppBarColors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(),
 ) {
-    if (LocalVisTokens.current.macos) {
+    if (LocalSummitTokens.current.macos) {
         androidx.compose.material3.CenterAlignedTopAppBar(
             title = title, modifier = modifier, navigationIcon = navigationIcon, actions = actions, colors = colors,
         )
@@ -144,7 +144,7 @@ fun CapsuleProgress(
 
 @Composable
 fun EmptyState(text: String, modifier: Modifier = Modifier, icon: androidx.compose.ui.graphics.vector.ImageVector = Icons.Outlined.Inbox) {
-    val t = LocalVisTokens.current
+    val t = LocalSummitTokens.current
     Column(
         modifier.fillMaxWidth().padding(top = 80.dp),
         horizontalAlignment = Alignment.CenterHorizontally,

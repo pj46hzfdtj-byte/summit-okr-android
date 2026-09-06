@@ -1,4 +1,4 @@
-package com.visokr.android.pages
+package com.summitokr.android.pages
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -43,33 +43,33 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.visokr.android.core.GoalsVM
-import com.visokr.android.core.GoalGroup
-import com.visokr.android.core.Objective
-import com.visokr.android.core.Routes
-import com.visokr.android.core.UiState
-import com.visokr.android.core.normProgress
-import com.visokr.android.ui.CapsuleProgress
-import com.visokr.android.ui.EmptyState
-import com.visokr.android.ui.ErrorView
-import com.visokr.android.ui.LoadingView
-import com.visokr.android.ui.LocalVisTokens
-import com.visokr.android.ui.PillTag
-import com.visokr.android.ui.VisCard
-import com.visokr.android.ui.VisTopBar
-import com.visokr.android.ui.parseHexColor
+import com.summitokr.android.core.GoalsVM
+import com.summitokr.android.core.GoalGroup
+import com.summitokr.android.core.Objective
+import com.summitokr.android.core.Routes
+import com.summitokr.android.core.UiState
+import com.summitokr.android.core.normProgress
+import com.summitokr.android.ui.CapsuleProgress
+import com.summitokr.android.ui.EmptyState
+import com.summitokr.android.ui.ErrorView
+import com.summitokr.android.ui.LoadingView
+import com.summitokr.android.ui.LocalSummitTokens
+import com.summitokr.android.ui.PillTag
+import com.summitokr.android.ui.SummitCard
+import com.summitokr.android.ui.SummitTopBar
+import com.summitokr.android.ui.parseHexColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GoalsPage(navController: NavController) {
     val vm: GoalsVM = viewModel()
     val tree by vm.tree.collectAsState()
-    val t = LocalVisTokens.current
+    val t = LocalSummitTokens.current
 
     Scaffold(
         containerColor = if (t.macos) Color.Transparent else t.bg,
         topBar = {
-            VisTopBar(
+            SummitTopBar(
                 title = { Text("目标库", fontWeight = FontWeight.Bold) },
                 actions = {
                     IconButton(onClick = { navController.navigate(Routes.GANTT) }) { Icon(Icons.Outlined.Timeline, "甘特图") }
@@ -134,7 +134,7 @@ private fun LazyListScope.objectiveTile(obj: Objective, depth: Int, navControlle
     item {
         val krCount = obj.keyResultCount ?: obj.keyResults?.size ?: 0
         val statusLabel = objectiveStatusLabel(obj.status)
-        VisCard(
+        SummitCard(
             modifier = Modifier.fillMaxWidth().padding(start = (8 + depth * 12).dp, end = 16.dp, top = 4.dp, bottom = 4.dp),
             onClick = { navController.navigate(Routes.goalDetail(obj.id)) },
             contentPadding = PaddingValues(horizontal = 14.dp, vertical = 10.dp),
@@ -155,7 +155,7 @@ private fun LazyListScope.objectiveTile(obj: Objective, depth: Int, navControlle
                     Icon(Icons.Outlined.WarningAmber, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(16.dp))
                     Spacer(Modifier.size(4.dp))
                 }
-                Text(statusLabel, style = MaterialTheme.typography.labelSmall, color = LocalVisTokens.current.textTertiary)
+                Text(statusLabel, style = MaterialTheme.typography.labelSmall, color = LocalSummitTokens.current.textTertiary)
             }
         }
     }

@@ -6,12 +6,12 @@ plugins {
 }
 
 android {
-    namespace = "com.visokr.android"
+    namespace = "com.summitokr.android"
     compileSdk = 36
     buildToolsVersion = "36.0.0"
 
     defaultConfig {
-        applicationId = "com.visokr.android"
+        applicationId = "com.summitokr.android"
         minSdk = 26
         targetSdk = 35
         versionCode = 1

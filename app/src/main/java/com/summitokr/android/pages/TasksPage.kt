@@ -1,4 +1,4 @@
-package com.visokr.android.pages
+package com.summitokr.android.pages
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -57,16 +57,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.visokr.android.core.Routes
-import com.visokr.android.core.Task
-import com.visokr.android.core.TasksVM
-import com.visokr.android.core.UiState
-import com.visokr.android.ui.EmptyState
-import com.visokr.android.ui.ErrorView
-import com.visokr.android.ui.LoadingView
-import com.visokr.android.ui.VisCard
-import com.visokr.android.ui.VisTopBar
-import com.visokr.android.ui.LocalVisTokens
+import com.summitokr.android.core.Routes
+import com.summitokr.android.core.Task
+import com.summitokr.android.core.TasksVM
+import com.summitokr.android.core.UiState
+import com.summitokr.android.ui.EmptyState
+import com.summitokr.android.ui.ErrorView
+import com.summitokr.android.ui.LoadingView
+import com.summitokr.android.ui.SummitCard
+import com.summitokr.android.ui.SummitTopBar
+import com.summitokr.android.ui.LocalSummitTokens
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -83,12 +83,12 @@ fun TasksPage(navController: NavController) {
     var month by remember { mutableStateOf(YearMonth.now()) }
     var selected by remember { mutableStateOf(LocalDate.now()) }
     var showCreate by remember { mutableStateOf(false) }
-    val t = LocalVisTokens.current
+    val t = LocalSummitTokens.current
 
     Scaffold(
         containerColor = if (t.macos) Color.Transparent else t.bg,
         topBar = {
-            VisTopBar(
+            SummitTopBar(
                 title = { Text("任务", fontWeight = FontWeight.Bold) },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = if (t.macos) Color.Transparent else MaterialTheme.colorScheme.surface),
             )
@@ -186,7 +186,7 @@ private fun CalendarBar(
         Row(Modifier.fillMaxWidth()) {
             listOf("一", "二", "三", "四", "五", "六", "日").forEach {
                 Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                    Text(it, fontSize = 11.sp, color = LocalVisTokens.current.textTertiary)
+                    Text(it, fontSize = 11.sp, color = LocalSummitTokens.current.textTertiary)
                 }
             }
         }
@@ -228,7 +228,7 @@ private fun CalendarBar(
                                 }
                                 Box(
                                     Modifier.size(4.dp).clip(CircleShape)
-                                        .background(if (hasTasks(date)) LocalVisTokens.current.success else Color.Transparent),
+                                        .background(if (hasTasks(date)) LocalSummitTokens.current.success else Color.Transparent),
                                 )
                             }
                         }
@@ -241,9 +241,9 @@ private fun CalendarBar(
 
 @Composable
 private fun TaskRow(task: Task, vm: TasksVM) {
-    val t = LocalVisTokens.current
+    val t = LocalSummitTokens.current
     val done = task.status == "completed"
-    VisCard(
+    SummitCard(
         modifier = Modifier.fillMaxWidth(),
         contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
     ) {

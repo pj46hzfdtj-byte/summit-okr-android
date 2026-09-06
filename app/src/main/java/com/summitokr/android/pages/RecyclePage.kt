@@ -1,4 +1,4 @@
-package com.visokr.android.pages
+package com.summitokr.android.pages
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -42,28 +42,28 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.visokr.android.core.RecycleVM
-import com.visokr.android.core.Routes
-import com.visokr.android.core.UiState
-import com.visokr.android.ui.EmptyState
-import com.visokr.android.ui.ErrorView
-import com.visokr.android.ui.LoadingView
-import com.visokr.android.ui.LocalVisTokens
-import com.visokr.android.ui.VisCard
-import com.visokr.android.ui.VisTopBar
+import com.summitokr.android.core.RecycleVM
+import com.summitokr.android.core.Routes
+import com.summitokr.android.core.UiState
+import com.summitokr.android.ui.EmptyState
+import com.summitokr.android.ui.ErrorView
+import com.summitokr.android.ui.LoadingView
+import com.summitokr.android.ui.LocalSummitTokens
+import com.summitokr.android.ui.SummitCard
+import com.summitokr.android.ui.SummitTopBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecyclePage(navController: NavController) {
     val vm: RecycleVM = viewModel()
     val items by vm.items.collectAsState()
-    val t = LocalVisTokens.current
+    val t = LocalSummitTokens.current
     var confirmEmpty by remember { mutableStateOf(false) }
 
     Scaffold(
         containerColor = if (t.macos) Color.Transparent else t.bg,
         topBar = {
-            VisTopBar(
+            SummitTopBar(
                 title = { Text("回收站", fontWeight = FontWeight.Bold) },
                 navigationIcon = { IconButton(onClick = { navController.popBackStack() }) { Icon(Icons.Outlined.ArrowBack, null) } },
                 actions = {
@@ -81,7 +81,7 @@ fun RecyclePage(navController: NavController) {
                 if (s.data.isEmpty()) EmptyState("回收站是空的", icon = Icons.Outlined.DeleteOutline)
                 else LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(s.data) { item ->
-                        VisCard(modifier = Modifier.fillMaxWidth(), onClick = { vm.restore(item) }) {
+                        SummitCard(modifier = Modifier.fillMaxWidth(), onClick = { vm.restore(item) }) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(Icons.Outlined.Restore, null, tint = MaterialTheme.colorScheme.primary)
                                 Spacer(Modifier.size(12.dp))

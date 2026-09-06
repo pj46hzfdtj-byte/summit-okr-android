@@ -1,4 +1,4 @@
-package com.visokr.android.pages
+package com.summitokr.android.pages
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -54,28 +54,28 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.visokr.android.core.AuthVM
-import com.visokr.android.ui.AuroraOverlay
-import com.visokr.android.ui.BrandGradient
-import com.visokr.android.ui.LocalVisTokens
-import com.visokr.android.ui.isDarkTheme
+import com.summitokr.android.core.AuthVM
+import com.summitokr.android.ui.AuroraOverlay
+import com.summitokr.android.ui.BrandGradient
+import com.summitokr.android.ui.LocalSummitTokens
+import com.summitokr.android.ui.isDarkTheme
 
 @Composable
 fun LoginPage(onLoggedIn: () -> Unit) {
     val vm: AuthVM = viewModel()
     val busy by vm.busy.collectAsState()
     val error by vm.error.collectAsState()
-    var email by remember { mutableStateOf("demo@visokr.com") }
+    var email by remember { mutableStateOf("demo@summitokr.com") }
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("password123") }
     var obscure by remember { mutableStateOf(true) }
     var register by remember { mutableStateOf(false) }
-    val t = LocalVisTokens.current
+    val t = LocalSummitTokens.current
 
     // 登录成功自动跳转
     val state by vm.state.collectAsState()
-    if (state is com.visokr.android.core.UiState.Success && com.visokr.android.core.TokenStore.accessToken != null) {
-        val user = (state as com.visokr.android.core.UiState.Success<*>).data
+    if (state is com.summitokr.android.core.UiState.Success && com.summitokr.android.core.TokenStore.accessToken != null) {
+        val user = (state as com.summitokr.android.core.UiState.Success<*>).data
         if (user != null) {
             androidx.compose.runtime.LaunchedEffect(user) { onLoggedIn() }
         }
@@ -107,7 +107,7 @@ fun LoginPage(onLoggedIn: () -> Unit) {
                 }
                 Spacer(Modifier.height(16.dp))
                 Text(
-                    "VIS OKR",
+                    "Summit OKR",
                     style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold, letterSpacing = (-0.5).sp),
                     color = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.fillMaxWidth(),
@@ -221,7 +221,7 @@ fun LoginPage(onLoggedIn: () -> Unit) {
                 }
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    "演示账号 demo@visokr.com / password123",
+                    "演示账号 demo@summitokr.com / password123",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                     modifier = Modifier.fillMaxWidth(),

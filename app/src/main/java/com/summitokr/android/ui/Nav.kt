@@ -1,4 +1,4 @@
-package com.visokr.android.ui
+package com.summitokr.android.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -39,21 +39,21 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.visokr.android.core.Routes
-import com.visokr.android.pages.AiPage
-import com.visokr.android.pages.FocusPage
-import com.visokr.android.pages.GanttPage
-import com.visokr.android.pages.GoalDetailPage
-import com.visokr.android.pages.GoalsPage
-import com.visokr.android.pages.HelpPage
-import com.visokr.android.pages.LoginPage
-import com.visokr.android.pages.MePage
-import com.visokr.android.pages.NotificationsPage
-import com.visokr.android.pages.RecyclePage
-import com.visokr.android.pages.ReviewsPage
-import com.visokr.android.pages.SummaryPage
-import com.visokr.android.pages.TasksPage
-import com.visokr.android.pages.VisionPage
+import com.summitokr.android.core.Routes
+import com.summitokr.android.pages.AiPage
+import com.summitokr.android.pages.FocusPage
+import com.summitokr.android.pages.GanttPage
+import com.summitokr.android.pages.GoalDetailPage
+import com.summitokr.android.pages.GoalsPage
+import com.summitokr.android.pages.HelpPage
+import com.summitokr.android.pages.LoginPage
+import com.summitokr.android.pages.MePage
+import com.summitokr.android.pages.NotificationsPage
+import com.summitokr.android.pages.RecyclePage
+import com.summitokr.android.pages.ReviewsPage
+import com.summitokr.android.pages.SummaryPage
+import com.summitokr.android.pages.TasksPage
+import com.summitokr.android.pages.VisionPage
 
 
 
@@ -62,8 +62,8 @@ private data class TabSpec(val route: String, val label: String, val icon: Image
 @Composable
 fun RootNav() {
     val navController = rememberNavController()
-    var loggedIn by remember { mutableStateOf(com.visokr.android.core.TokenStore.accessToken != null) }
-    val t = LocalVisTokens.current
+    var loggedIn by remember { mutableStateOf(com.summitokr.android.core.TokenStore.accessToken != null) }
+    val t = LocalSummitTokens.current
 
     // 对齐 Flutter main.dart 的 AppBackground：macOS 主题下全局挂 Aurora 渐变+光斑背景，
     // 各页 Scaffold 已设 Transparent 容器色，自然透出（登录页自带，不重复包）。
@@ -132,7 +132,7 @@ private fun ShellScaffold(
         TabSpec(Routes.TASKS, "任务", Icons.Outlined.EventNote, Icons.Filled.EventNote),
         TabSpec(Routes.ME, "我的", Icons.Outlined.Person, Icons.Filled.Person),
     )
-    val t = LocalVisTokens.current
+    val t = LocalSummitTokens.current
     // 对齐 Flutter ShellPage：macOS 下导航栏顶部圆角 22 + 半透明玻璃底（.82 alpha）
     val navBar: @Composable () -> Unit = {
         NavigationBar(

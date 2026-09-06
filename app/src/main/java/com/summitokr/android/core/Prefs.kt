@@ -1,4 +1,4 @@
-package com.visokr.android.core
+package com.summitokr.android.core
 
 import android.content.Context
 import androidx.datastore.core.DataStore
@@ -9,7 +9,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "visokr_prefs")
+val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "summitokr_prefs")
 
 object Prefs {
     val KEY_APPEARANCE = stringPreferencesKey("appearance") // light | dark | system

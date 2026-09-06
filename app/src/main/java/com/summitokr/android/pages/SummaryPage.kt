@@ -1,4 +1,4 @@
-package com.visokr.android.pages
+package com.summitokr.android.pages
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -45,17 +45,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.visokr.android.core.Routes
-import com.visokr.android.core.SummaryVM
-import com.visokr.android.core.UiState
-import com.visokr.android.core.normProgress
-import com.visokr.android.ui.CapsuleProgress
-import com.visokr.android.ui.ErrorView
-import com.visokr.android.ui.LoadingView
-import com.visokr.android.ui.LocalVisTokens
-import com.visokr.android.ui.VisCard
-import com.visokr.android.ui.VisTopBar
-import com.visokr.android.ui.toPctInt
+import com.summitokr.android.core.Routes
+import com.summitokr.android.core.SummaryVM
+import com.summitokr.android.core.UiState
+import com.summitokr.android.core.normProgress
+import com.summitokr.android.ui.CapsuleProgress
+import com.summitokr.android.ui.ErrorView
+import com.summitokr.android.ui.LoadingView
+import com.summitokr.android.ui.LocalSummitTokens
+import com.summitokr.android.ui.SummitCard
+import com.summitokr.android.ui.SummitTopBar
+import com.summitokr.android.ui.toPctInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -63,12 +63,12 @@ fun SummaryPage(navController: NavController) {
     val vm: SummaryVM = viewModel()
     val summary by vm.summary.collectAsState()
     val checkin by vm.checkin.collectAsState()
-    val t = LocalVisTokens.current
+    val t = LocalSummitTokens.current
 
     Scaffold(
         containerColor = if (t.macos) Color.Transparent else t.bg,
         topBar = {
-            VisTopBar(
+            SummitTopBar(
                 title = { Text("摘要", fontWeight = FontWeight.Bold) },
                 actions = {
                     IconButton(onClick = { navController.navigate(Routes.NOTIFICATIONS) }) {
@@ -112,7 +112,7 @@ fun SummaryPage(navController: NavController) {
                     if (d.todayTasks.isNotEmpty()) {
                         item { Text("今日待办", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold) }
                         items(d.todayTasks) { task ->
-                            VisCard(modifier = Modifier.fillMaxWidth()) {
+                            SummitCard(modifier = Modifier.fillMaxWidth()) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     IconButton(onClick = { vm.toggleTask(task.id, true) }) {
                                         Icon(Icons.Outlined.RadioButtonUnchecked, null, tint = t.textTertiary)
@@ -130,7 +130,7 @@ fun SummaryPage(navController: NavController) {
                     if (d.laggingObjectives.isNotEmpty()) {
                         item { Text("滞后目标", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold) }
                         items(d.laggingObjectives) { obj ->
-                            VisCard(
+                            SummitCard(
                                 modifier = Modifier.fillMaxWidth(),
                                 onClick = { navController.navigate(Routes.goalDetail(obj.id)) },
                             ) {
@@ -165,7 +165,7 @@ fun SummaryPage(navController: NavController) {
 private fun MotivationCard(text: String) {
     Box(
         Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp))
-            .background(com.visokr.android.ui.BrandGradient)
+            .background(com.summitokr.android.ui.BrandGradient)
             .padding(18.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -180,11 +180,11 @@ private fun MotivationCard(text: String) {
 }
 
 @Composable
-private fun CheckinCard(state: UiState<com.visokr.android.core.CheckInStatus>, vm: SummaryVM) {
-    val t = LocalVisTokens.current
+private fun CheckinCard(state: UiState<com.summitokr.android.core.CheckInStatus>, vm: SummaryVM) {
+    val t = LocalSummitTokens.current
     if (state !is UiState.Success) return
     val s = state.data
-    VisCard(modifier = Modifier.fillMaxWidth()) {
+    SummitCard(modifier = Modifier.fillMaxWidth()) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
                 if (s.done) Icons.Filled.CheckCircle else Icons.Outlined.RadioButtonUnchecked,
@@ -207,8 +207,8 @@ private fun CheckinCard(state: UiState<com.visokr.android.core.CheckInStatus>, v
 
 @Composable
 private fun CycleCard(name: String, count: Int, onClick: () -> Unit) {
-    val t = LocalVisTokens.current
-    VisCard(modifier = Modifier.fillMaxWidth(), onClick = onClick) {
+    val t = LocalSummitTokens.current
+    SummitCard(modifier = Modifier.fillMaxWidth(), onClick = onClick) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(Icons.Outlined.Timer, null, tint = MaterialTheme.colorScheme.primary)
             Spacer(Modifier.size(12.dp))
@@ -223,8 +223,8 @@ private fun CycleCard(name: String, count: Int, onClick: () -> Unit) {
 
 @Composable
 private fun KpiCell(label: String, value: String, modifier: Modifier = Modifier, danger: Boolean = false) {
-    val t = LocalVisTokens.current
-    VisCard(modifier = modifier) {
+    val t = LocalSummitTokens.current
+    SummitCard(modifier = modifier) {
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 value,

@@ -1,4 +1,4 @@
-package com.visokr.android.core
+package com.summitokr.android.core
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable

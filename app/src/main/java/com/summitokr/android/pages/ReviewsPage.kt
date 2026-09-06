@@ -1,4 +1,4 @@
-package com.visokr.android.pages
+package com.summitokr.android.pages
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -50,38 +50,38 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.visokr.android.core.CreateReviewReq
-import com.visokr.android.core.GoalGroup
-import com.visokr.android.core.GoalsVM
-import com.visokr.android.core.KrScore
-import com.visokr.android.core.NetClient
-import com.visokr.android.core.Objective
-import com.visokr.android.core.Review
-import com.visokr.android.core.ReviewsVM
-import com.visokr.android.core.Routes
-import com.visokr.android.core.UiState
-import com.visokr.android.core.unwrap
-import com.visokr.android.ui.EmptyState
-import com.visokr.android.ui.ErrorView
-import com.visokr.android.ui.LoadingView
-import com.visokr.android.ui.LocalVisTokens
-import com.visokr.android.ui.PillTag
-import com.visokr.android.ui.VisCard
-import com.visokr.android.ui.VisTopBar
+import com.summitokr.android.core.CreateReviewReq
+import com.summitokr.android.core.GoalGroup
+import com.summitokr.android.core.GoalsVM
+import com.summitokr.android.core.KrScore
+import com.summitokr.android.core.NetClient
+import com.summitokr.android.core.Objective
+import com.summitokr.android.core.Review
+import com.summitokr.android.core.ReviewsVM
+import com.summitokr.android.core.Routes
+import com.summitokr.android.core.UiState
+import com.summitokr.android.core.unwrap
+import com.summitokr.android.ui.EmptyState
+import com.summitokr.android.ui.ErrorView
+import com.summitokr.android.ui.LoadingView
+import com.summitokr.android.ui.LocalSummitTokens
+import com.summitokr.android.ui.PillTag
+import com.summitokr.android.ui.SummitCard
+import com.summitokr.android.ui.SummitTopBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReviewsPage(navController: NavController) {
     val vm: ReviewsVM = viewModel()
     val reviews by vm.reviews.collectAsState()
-    val t = LocalVisTokens.current
+    val t = LocalSummitTokens.current
     var picking by remember { mutableStateOf(false) }
     var formObjective by remember { mutableStateOf<Objective?>(null) }
 
     Scaffold(
         containerColor = if (t.macos) Color.Transparent else t.bg,
         topBar = {
-            VisTopBar(
+            SummitTopBar(
                 title = { Text("复盘", fontWeight = FontWeight.Bold) },
                 navigationIcon = { IconButton(onClick = { navController.popBackStack() }) { Icon(Icons.Outlined.ArrowBack, null) } },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = if (t.macos) Color.Transparent else MaterialTheme.colorScheme.surface),
@@ -127,8 +127,8 @@ fun ReviewsPage(navController: NavController) {
 
 @Composable
 private fun ReviewCard(r: Review) {
-    val t = LocalVisTokens.current
-    VisCard(modifier = Modifier.fillMaxWidth()) {
+    val t = LocalSummitTokens.current
+    SummitCard(modifier = Modifier.fillMaxWidth()) {
         Column {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 PillTag(if (r.type == "final") "期末" else "期中", if (r.type == "final") MaterialTheme.colorScheme.primary else t.success)
@@ -169,12 +169,12 @@ private fun ObjectivePickerDialog(onDismiss: () -> Unit, onPick: (Objective) -> 
         onDismissRequest = onDismiss,
         title = { Text("选择目标", fontWeight = FontWeight.Bold) },
         text = {
-            if (objectives.isEmpty()) Text("暂无目标", color = LocalVisTokens.current.textTertiary)
+            if (objectives.isEmpty()) Text("暂无目标", color = LocalSummitTokens.current.textTertiary)
             else LazyColumn(Modifier.height(300.dp)) {
                 items(objectives) { o ->
                     Column(Modifier.fillMaxWidth().clickable { onPick(o) }.padding(vertical = 10.dp)) {
                         Text(o.title, style = MaterialTheme.typography.bodyMedium)
-                        Text(objectiveStatusLabel(o.status), style = MaterialTheme.typography.bodySmall, color = LocalVisTokens.current.textTertiary)
+                        Text(objectiveStatusLabel(o.status), style = MaterialTheme.typography.bodySmall, color = LocalSummitTokens.current.textTertiary)
                     }
                 }
             }
@@ -190,7 +190,7 @@ private fun ReviewFormDialog(obj: Objective, onDismiss: () -> Unit, onSave: (Cre
     var type by remember { mutableStateOf("midterm") }
     var thoughts by remember { mutableStateOf("") }
     var krScores by remember { mutableStateOf<Map<String, Double>>(emptyMap()) }
-    var krs by remember { mutableStateOf<List<com.visokr.android.core.KeyResult>?>(null) }
+    var krs by remember { mutableStateOf<List<com.summitokr.android.core.KeyResult>?>(null) }
     androidx.compose.runtime.LaunchedEffect(obj.id) {
         runCatching { krs = NetClient.api.keyResults(obj.id).unwrap() }
     }
@@ -208,7 +208,7 @@ private fun ReviewFormDialog(obj: Objective, onDismiss: () -> Unit, onSave: (Cre
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 listOf("midterm" to "期中", "final" to "期末").forEach { (v, l) ->
                     TextButton(onClick = { type = v }) {
-                        Text(l, color = if (type == v) MaterialTheme.colorScheme.primary else LocalVisTokens.current.textTertiary, fontWeight = if (type == v) FontWeight.Bold else null)
+                        Text(l, color = if (type == v) MaterialTheme.colorScheme.primary else LocalSummitTokens.current.textTertiary, fontWeight = if (type == v) FontWeight.Bold else null)
                     }
                 }
             }
@@ -220,7 +220,7 @@ private fun ReviewFormDialog(obj: Objective, onDismiss: () -> Unit, onSave: (Cre
                 Column {
                     Text("${kr.emoji} ${kr.title}", style = MaterialTheme.typography.bodySmall, maxLines = 1)
                     Slider(value = cur, onValueChange = { krScores = krScores + (kr.id to it.toDouble()) })
-                    Text("${cur.toInt()} 分", fontSize = 11.sp, color = LocalVisTokens.current.textTertiary)
+                    Text("${cur.toInt()} 分", fontSize = 11.sp, color = LocalSummitTokens.current.textTertiary)
                 }
             }
             OutlinedTextField(value = thoughts, onValueChange = { thoughts = it }, label = { Text("思考（可选）") }, modifier = Modifier.fillMaxWidth())

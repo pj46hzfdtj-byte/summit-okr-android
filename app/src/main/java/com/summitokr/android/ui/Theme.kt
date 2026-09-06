@@ -1,4 +1,4 @@
-package com.visokr.android.ui
+package com.summitokr.android.ui
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -30,7 +30,7 @@ import androidx.compose.ui.unit.sp
 import kotlin.math.roundToInt
 
 // ============ 设计 token（与 Taro/uniapp/Flutter 三端对齐的规范字面值） ============
-object VisSpec {
+object SummitSpec {
     val Text = Color(0xFF1F2329)
     val TextSecondary = Color(0xFF646A73)
     val TextTertiary = Color(0xFF8F959E)
@@ -60,7 +60,7 @@ object VisSpec {
 /** 配色主题主色（仅 primary 变化；夜间提亮） */
 data class SeedPalette(val light: Color, val dark: Color)
 
-object VisSeeds {
+object SummitSeeds {
     val all = listOf("light", "blue", "green", "purple", "macos")
     val labels = mapOf("light" to "浅色", "blue" to "蓝", "green" to "绿", "purple" to "紫", "macos" to "macOS")
     val preview = mapOf(
@@ -95,7 +95,7 @@ fun mix(a: Color, b: Color, t: Float): Color {
 
 /** 扩展 token：语义色 / macOS 标志 / 圆角 / 背景 */
 @Immutable
-data class VisTokens(
+data class SummitTokens(
     val macos: Boolean,
     val success: Color,
     val warning: Color,
@@ -108,39 +108,39 @@ data class VisTokens(
     val radiusControl: androidx.compose.ui.unit.Dp,
 )
 
-val LocalVisTokens: ProvidableCompositionLocal<VisTokens> = staticCompositionLocalOf {
-    VisTokens(
+val LocalSummitTokens: ProvidableCompositionLocal<SummitTokens> = staticCompositionLocalOf {
+    SummitTokens(
         macos = false,
-        success = VisSpec.Success,
-        warning = VisSpec.Warning,
-        danger = VisSpec.Danger,
-        textTertiary = VisSpec.TextTertiary,
-        border = VisSpec.Border,
-        bg = VisSpec.Bg,
-        card = VisSpec.Card,
+        success = SummitSpec.Success,
+        warning = SummitSpec.Warning,
+        danger = SummitSpec.Danger,
+        textTertiary = SummitSpec.TextTertiary,
+        border = SummitSpec.Border,
+        bg = SummitSpec.Bg,
+        card = SummitSpec.Card,
         radiusCard = 16.dp,
         radiusControl = 12.dp,
     )
 }
 
 @Composable
-fun visTokens(): VisTokens = LocalVisTokens.current
+fun visTokens(): SummitTokens = LocalSummitTokens.current
 
 fun buildColorScheme(seed: String, dark: Boolean): ColorScheme {
     val macos = isMacos(seed)
-    val primary = VisSeeds.primary(seed, dark)
-    val card = if (dark) VisSpec.CardDark else VisSpec.Card
-    val text = if (dark) VisSpec.TextDark else VisSpec.Text
-    val textSecondary = if (dark) VisSpec.TextSecondaryDark else VisSpec.TextSecondary
-    val border = if (dark) VisSpec.BorderDark else VisSpec.Border
-    val success = if (macos) (if (dark) VisSpec.MacosSuccessDark else VisSpec.MacosSuccess) else VisSpec.Success
-    val danger = if (macos) (if (dark) VisSpec.MacosDangerDark else VisSpec.MacosDanger) else VisSpec.Danger
+    val primary = SummitSeeds.primary(seed, dark)
+    val card = if (dark) SummitSpec.CardDark else SummitSpec.Card
+    val text = if (dark) SummitSpec.TextDark else SummitSpec.Text
+    val textSecondary = if (dark) SummitSpec.TextSecondaryDark else SummitSpec.TextSecondary
+    val border = if (dark) SummitSpec.BorderDark else SummitSpec.Border
+    val success = if (macos) (if (dark) SummitSpec.MacosSuccessDark else SummitSpec.MacosSuccess) else SummitSpec.Success
+    val danger = if (macos) (if (dark) SummitSpec.MacosDangerDark else SummitSpec.MacosDanger) else SummitSpec.Danger
     val primaryContainer = mix(primary, card, if (dark) 0.82f else 0.86f)
     val errorContainer = mix(danger, card, 0.86f)
     val successContainer = mix(success, card, 0.86f)
     val surfaceContainerHigh = mix(text, card, if (dark) 0.06f else 0.035f)
     val surfaceContainerHighest = mix(text, card, if (dark) 0.10f else 0.06f)
-    val onInverse = if (dark) VisSpec.CardDark else VisSpec.Bg
+    val onInverse = if (dark) SummitSpec.CardDark else SummitSpec.Bg
     return (if (dark) darkColorScheme() else lightColorScheme()).copy(
         primary = primary,
         onPrimary = Color.White,
@@ -158,7 +158,7 @@ fun buildColorScheme(seed: String, dark: Boolean): ColorScheme {
         onError = Color.White,
         errorContainer = errorContainer,
         onErrorContainer = danger,
-        background = if (dark) VisSpec.BgDark else VisSpec.Bg,
+        background = if (dark) SummitSpec.BgDark else SummitSpec.Bg,
         onBackground = text,
         surface = card,
         onSurface = text,
@@ -178,7 +178,7 @@ fun buildColorScheme(seed: String, dark: Boolean): ColorScheme {
     )
 }
 
-private val VisTypography = Typography(
+private val SummitTypography = Typography(
     displaySmall = TextStyle(fontSize = 28.sp, fontWeight = FontWeight.Bold),
     headlineMedium = TextStyle(fontSize = 24.sp, fontWeight = FontWeight.Bold),
     headlineSmall = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold),
@@ -194,38 +194,38 @@ private val VisTypography = Typography(
 )
 
 /** macOS 主题：SF Pro 风格负字距（正文 -0.01，标题 -0.02），对齐 Flutter theme.dart */
-private val VisTypographyMacos = VisTypography.copy(
-    displaySmall = VisTypography.displaySmall.copy(letterSpacing = (-0.02).sp),
-    headlineMedium = VisTypography.headlineMedium.copy(letterSpacing = (-0.02).sp),
-    headlineSmall = VisTypography.headlineSmall.copy(letterSpacing = (-0.02).sp),
-    titleLarge = VisTypography.titleLarge.copy(letterSpacing = (-0.02).sp),
-    titleMedium = VisTypography.titleMedium.copy(letterSpacing = (-0.02).sp),
-    titleSmall = VisTypography.titleSmall.copy(letterSpacing = (-0.02).sp),
-    bodyLarge = VisTypography.bodyLarge.copy(letterSpacing = (-0.01).sp),
-    bodyMedium = VisTypography.bodyMedium.copy(letterSpacing = (-0.01).sp),
-    bodySmall = VisTypography.bodySmall.copy(letterSpacing = (-0.01).sp),
-    labelLarge = VisTypography.labelLarge.copy(letterSpacing = (-0.01).sp),
-    labelMedium = VisTypography.labelMedium.copy(letterSpacing = (-0.01).sp),
-    labelSmall = VisTypography.labelSmall.copy(letterSpacing = (-0.01).sp),
+private val SummitTypographyMacos = SummitTypography.copy(
+    displaySmall = SummitTypography.displaySmall.copy(letterSpacing = (-0.02).sp),
+    headlineMedium = SummitTypography.headlineMedium.copy(letterSpacing = (-0.02).sp),
+    headlineSmall = SummitTypography.headlineSmall.copy(letterSpacing = (-0.02).sp),
+    titleLarge = SummitTypography.titleLarge.copy(letterSpacing = (-0.02).sp),
+    titleMedium = SummitTypography.titleMedium.copy(letterSpacing = (-0.02).sp),
+    titleSmall = SummitTypography.titleSmall.copy(letterSpacing = (-0.02).sp),
+    bodyLarge = SummitTypography.bodyLarge.copy(letterSpacing = (-0.01).sp),
+    bodyMedium = SummitTypography.bodyMedium.copy(letterSpacing = (-0.01).sp),
+    bodySmall = SummitTypography.bodySmall.copy(letterSpacing = (-0.01).sp),
+    labelLarge = SummitTypography.labelLarge.copy(letterSpacing = (-0.01).sp),
+    labelMedium = SummitTypography.labelMedium.copy(letterSpacing = (-0.01).sp),
+    labelSmall = SummitTypography.labelSmall.copy(letterSpacing = (-0.01).sp),
 )
 
 @Composable
-fun VisTheme(
+fun SummitTheme(
     seed: String,
     dark: Boolean,
     content: @Composable () -> Unit,
 ) {
     val macos = isMacos(seed)
     val scheme = buildColorScheme(seed, dark)
-    val tokens = VisTokens(
+    val tokens = SummitTokens(
         macos = macos,
-        success = if (macos) (if (dark) VisSpec.MacosSuccessDark else VisSpec.MacosSuccess) else VisSpec.Success,
-        warning = if (macos) (if (dark) VisSpec.MacosWarningDark else VisSpec.MacosWarning) else VisSpec.Warning,
+        success = if (macos) (if (dark) SummitSpec.MacosSuccessDark else SummitSpec.MacosSuccess) else SummitSpec.Success,
+        warning = if (macos) (if (dark) SummitSpec.MacosWarningDark else SummitSpec.MacosWarning) else SummitSpec.Warning,
         danger = scheme.error,
-        textTertiary = if (dark) VisSpec.TextTertiaryDark else VisSpec.TextTertiary,
-        border = if (dark) VisSpec.BorderDark else VisSpec.Border,
-        bg = if (dark) VisSpec.BgDark else VisSpec.Bg,
-        card = if (dark) VisSpec.CardDark else VisSpec.Card,
+        textTertiary = if (dark) SummitSpec.TextTertiaryDark else SummitSpec.TextTertiary,
+        border = if (dark) SummitSpec.BorderDark else SummitSpec.Border,
+        bg = if (dark) SummitSpec.BgDark else SummitSpec.Bg,
+        card = if (dark) SummitSpec.CardDark else SummitSpec.Card,
         radiusCard = if (macos) 20.dp else 16.dp,
         radiusControl = if (macos) 14.dp else 12.dp,
     )
@@ -236,10 +236,10 @@ fun VisTheme(
         large = RoundedCornerShape(tokens.radiusCard),
         extraLarge = RoundedCornerShape(24.dp),
     )
-    androidx.compose.runtime.CompositionLocalProvider(LocalVisTokens provides tokens) {
+    androidx.compose.runtime.CompositionLocalProvider(LocalSummitTokens provides tokens) {
         MaterialTheme(
             colorScheme = scheme,
-            typography = if (macos) VisTypographyMacos else VisTypography,
+            typography = if (macos) SummitTypographyMacos else SummitTypography,
             shapes = shapes,
             content = content,
         )
@@ -256,18 +256,18 @@ val BrandGradient = Brush.linearGradient(
 /** macOS 玻璃卡片底色：半透明白（light .78 / dark .08 alpha） */
 @Composable
 fun visCardColor(): Color {
-    val t = LocalVisTokens.current
+    val t = LocalSummitTokens.current
     return if (t.macos) {
         if (isDarkTheme()) Color.White.copy(alpha = 0.08f) else Color.White.copy(alpha = 0.78f)
     } else t.card
 }
 
 @Composable
-fun isDarkTheme(): Boolean = MaterialTheme.colorScheme.surface == VisSpec.CardDark
+fun isDarkTheme(): Boolean = MaterialTheme.colorScheme.surface == SummitSpec.CardDark
 
 @Composable
 fun visCardBorder(): BorderStroke {
-    val t = LocalVisTokens.current
+    val t = LocalSummitTokens.current
     return BorderStroke(
         1.dp,
         if (t.macos) Color.White.copy(alpha = if (isDarkTheme()) 0.10f else 0.55f) else t.border,
@@ -277,7 +277,7 @@ fun visCardBorder(): BorderStroke {
 /** 全局背景：macOS 主题显示 Aurora 多色光斑，其余纯色背景 */
 @Composable
 fun AppBackground(content: @Composable BoxScope.() -> Unit) {
-    val t = LocalVisTokens.current
+    val t = LocalSummitTokens.current
     val dark = isDarkTheme()
     Box(Modifier.fillMaxSize().background(if (t.macos) Color.Transparent else t.bg)) {
         if (t.macos) {
@@ -332,7 +332,7 @@ fun AuroraOverlay(modifier: Modifier = Modifier) {
 
 /** 统一卡片 shape（供页面复用） */
 @Composable
-fun visCardShape(): Shape = RoundedCornerShape(LocalVisTokens.current.radiusCard)
+fun visCardShape(): Shape = RoundedCornerShape(LocalSummitTokens.current.radiusCard)
 
 @Composable
-fun visControlShape(): Shape = RoundedCornerShape(LocalVisTokens.current.radiusControl)
+fun visControlShape(): Shape = RoundedCornerShape(LocalSummitTokens.current.radiusControl)

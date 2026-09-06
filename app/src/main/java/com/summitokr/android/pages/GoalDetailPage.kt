@@ -1,4 +1,4 @@
-package com.visokr.android.pages
+package com.summitokr.android.pages
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -48,7 +48,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -61,22 +60,22 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.visokr.android.core.GoalDetailVM
-import com.visokr.android.core.Memo
-import com.visokr.android.core.NetClient
-import com.visokr.android.core.Routes
-import com.visokr.android.core.TrendPoint
-import com.visokr.android.core.UiState
-import com.visokr.android.core.normProgress
-import com.visokr.android.core.unwrap
-import com.visokr.android.ui.CapsuleProgress
-import com.visokr.android.ui.ErrorView
-import com.visokr.android.ui.LoadingView
-import com.visokr.android.ui.LocalVisTokens
-import com.visokr.android.ui.PillTag
-import com.visokr.android.ui.VisCard
-import com.visokr.android.ui.VisTopBar
-import com.visokr.android.ui.parseHexColor
+import com.summitokr.android.core.GoalDetailVM
+import com.summitokr.android.core.Memo
+import com.summitokr.android.core.NetClient
+import com.summitokr.android.core.Routes
+import com.summitokr.android.core.TrendPoint
+import com.summitokr.android.core.UiState
+import com.summitokr.android.core.normProgress
+import com.summitokr.android.core.unwrap
+import com.summitokr.android.ui.CapsuleProgress
+import com.summitokr.android.ui.ErrorView
+import com.summitokr.android.ui.LoadingView
+import com.summitokr.android.ui.LocalSummitTokens
+import com.summitokr.android.ui.PillTag
+import com.summitokr.android.ui.SummitCard
+import com.summitokr.android.ui.SummitTopBar
+import com.summitokr.android.ui.parseHexColor
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -90,12 +89,12 @@ fun GoalDetailPage(objectiveId: String, navController: NavController) {
     val vm: GoalDetailVM = viewModel(key = "goal_$objectiveId") { GoalDetailVM(objectiveId) }
     val detail by vm.detail.collectAsState()
     val trends by vm.trends.collectAsState()
-    val t = LocalVisTokens.current
+    val t = LocalSummitTokens.current
 
     Scaffold(
         containerColor = if (t.macos) Color.Transparent else t.bg,
         topBar = {
-            VisTopBar(
+            SummitTopBar(
                 title = { Text("目标详情", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) { Icon(Icons.Outlined.ArrowBack, null) }
@@ -127,16 +126,21 @@ fun GoalDetailPage(objectiveId: String, navController: NavController) {
                         if (span == 0.0) 0.0 else ((kr.currentValue - kr.initialValue) / span)
                     }).coerceIn(0.0, 1.0)
                     // 对齐 Flutter Dismissible：KR 行滑动删除（确认后调 deleteKeyResult）
-                    val dismissState = rememberSwipeToDismissBoxState()
                     var confirmDelete by remember(kr.id) { mutableStateOf(false) }
-                    val dismissScope = rememberCoroutineScope()
+                    val dismissState = rememberSwipeToDismissBoxState(
+                        // 不真正移除行（避免确认前卡片塌陷消失），删除由确认框触发
+                        confirmValueChange = {
+                            if (it != SwipeToDismissBoxValue.Settled) confirmDelete = true
+                            false
+                        },
+                    )
                     SwipeToDismissBox(
                         state = dismissState,
                         enableDismissFromStartToEnd = false,
                         modifier = Modifier.clip(RoundedCornerShape(t.radiusCard)),
                         backgroundContent = {
                             Box(
-                                Modifier.fillMaxWidth().clip(RoundedCornerShape(t.radiusCard))
+                                Modifier.fillMaxSize().clip(RoundedCornerShape(t.radiusCard))
                                     .background(MaterialTheme.colorScheme.errorContainer)
                                     .padding(horizontal = 20.dp),
                                 contentAlignment = Alignment.CenterEnd,
@@ -144,9 +148,8 @@ fun GoalDetailPage(objectiveId: String, navController: NavController) {
                                 Icon(Icons.Outlined.DeleteOutline, null, tint = MaterialTheme.colorScheme.onErrorContainer)
                             }
                         },
-                        onDismiss = { if (it != SwipeToDismissBoxValue.Settled) confirmDelete = true },
                     ) {
-                        VisCard(modifier = Modifier.fillMaxWidth()) {
+                        SummitCard(modifier = Modifier.fillMaxWidth()) {
                         Column {
                             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickableRow { expanded = !expanded }) {
                                 Text(kr.emoji, fontSize = 18.sp)
@@ -181,7 +184,7 @@ fun GoalDetailPage(objectiveId: String, navController: NavController) {
                         }
                     }
                     }
-                    // 弹层与对话框移出 VisCard，避免影响卡片布局
+                    // 弹层与对话框移出 SummitCard，避免影响卡片布局
                     if (showRecord) {
                         RecordSheet(kr.title, kr.currentValue, onDismiss = { showRecord = false }) { value, note ->
                             vm.addRecord(kr.id, value, note)
@@ -193,7 +196,7 @@ fun GoalDetailPage(objectiveId: String, navController: NavController) {
                     }
                     if (confirmDelete) {
                         AlertDialog(
-                            onDismissRequest = { confirmDelete = false; dismissScope.launch { dismissState.reset() } },
+                            onDismissRequest = { confirmDelete = false },
                             title = { Text("删除关键结果") },
                             text = { Text("确定删除「${kr.title}」？将移入回收站。") },
                             confirmButton = {
@@ -202,7 +205,7 @@ fun GoalDetailPage(objectiveId: String, navController: NavController) {
                                 }
                             },
                             dismissButton = {
-                                TextButton(onClick = { confirmDelete = false; dismissScope.launch { dismissState.reset() } }) { Text("取消") }
+                                TextButton(onClick = { confirmDelete = false }) { Text("取消") }
                             },
                         )
                     }
@@ -218,7 +221,7 @@ private fun Modifier.clickableRow(onClick: () -> Unit): Modifier = this.clickabl
 
 @Composable
 private fun HeaderCard(title: String, color: Color, status: String, startAt: String?, endAt: String?, progress: Float, lagging: Boolean, expected: Float) {
-    VisCard(modifier = Modifier.fillMaxWidth()) {
+    SummitCard(modifier = Modifier.fillMaxWidth()) {
         Column {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(title, style = MaterialTheme.typography.titleMedium, color = color, modifier = Modifier.weight(1f))
@@ -226,7 +229,7 @@ private fun HeaderCard(title: String, color: Color, status: String, startAt: Str
             }
             if (!startAt.isNullOrBlank() && !endAt.isNullOrBlank()) {
                 Spacer(Modifier.height(8.dp))
-                Text("${fmtDate(startAt)} → ${fmtDate(endAt)}", style = MaterialTheme.typography.bodySmall, color = LocalVisTokens.current.textTertiary)
+                Text("${fmtDate(startAt)} → ${fmtDate(endAt)}", style = MaterialTheme.typography.bodySmall, color = LocalSummitTokens.current.textTertiary)
             }
             Spacer(Modifier.height(12.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -248,7 +251,7 @@ private fun HeaderCard(title: String, color: Color, status: String, startAt: Str
 
 @Composable
 private fun ChipsCard(title: String, items: List<String>, icon: androidx.compose.ui.graphics.vector.ImageVector) {
-    VisCard(modifier = Modifier.fillMaxWidth()) {
+    SummitCard(modifier = Modifier.fillMaxWidth()) {
         Column {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(icon, null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -286,7 +289,7 @@ private fun TrendChart(points: List<TrendPoint>, color: Color) {
         Text(
             "${fmtDate(points.first().recordedAt).take(5)} … ${fmtDate(points.last().recordedAt).take(5)}",
             style = MaterialTheme.typography.labelSmall,
-            color = LocalVisTokens.current.textTertiary,
+            color = LocalSummitTokens.current.textTertiary,
         )
     }
 }
@@ -340,12 +343,12 @@ private fun MemoSheet(krId: String, onClose: () -> Unit) {
             Column(Modifier.fillMaxWidth().height(280.dp)) {
                 val list = memos.value
                 if (list == null) LoadingView()
-                else if (list.isEmpty()) Box(Modifier.fillMaxWidth(), Alignment.Center) { Text("暂无备忘", color = LocalVisTokens.current.textTertiary) }
+                else if (list.isEmpty()) Box(Modifier.fillMaxWidth(), Alignment.Center) { Text("暂无备忘", color = LocalSummitTokens.current.textTertiary) }
                 else LazyColumn(Modifier.weight(1f)) {
                     items(list) { m ->
                         Column(Modifier.padding(vertical = 6.dp)) {
                             Text(m.content, style = MaterialTheme.typography.bodyMedium)
-                            Text(fmtDateTime(m.createdAt), style = MaterialTheme.typography.labelSmall, color = LocalVisTokens.current.textTertiary)
+                            Text(fmtDateTime(m.createdAt), style = MaterialTheme.typography.labelSmall, color = LocalSummitTokens.current.textTertiary)
                         }
                     }
                 }
@@ -364,7 +367,7 @@ private fun MemoSheet(krId: String, onClose: () -> Unit) {
                         if (text.isNotEmpty()) {
                             CoroutineScope(Dispatchers.Main).launch {
                                 runCatching {
-                                    NetClient.api.createMemo(com.visokr.android.core.CreateMemoReq("key_result", krId, text)).unwrap()
+                                    NetClient.api.createMemo(com.summitokr.android.core.CreateMemoReq("key_result", krId, text)).unwrap()
                                     input.value = ""
                                     refreshKey++
                                 }

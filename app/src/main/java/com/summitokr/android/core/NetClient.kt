@@ -1,7 +1,7 @@
-package com.visokr.android.core
+package com.summitokr.android.core
 
 import android.content.Context
-import com.visokr.android.BuildConfig
+import com.summitokr.android.BuildConfig
 import kotlinx.serialization.json.Json
 import okhttp3.Authenticator
 import okhttp3.MediaType.Companion.toMediaType
@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 /** 令牌存储：同步读（Authenticator 在 OkHttp 线程回调），SharedPreferences 持久化 */
 object TokenStore {
-    private const val PREF = "visokr_tokens"
+    private const val PREF = "summitokr_tokens"
     private lateinit var sp: android.content.SharedPreferences
 
     fun init(context: Context) {

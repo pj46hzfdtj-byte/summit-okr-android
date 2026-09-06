@@ -1,4 +1,4 @@
-package com.visokr.android.pages
+package com.summitokr.android.pages
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -41,12 +41,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.visokr.android.core.FeedbackReq
-import com.visokr.android.core.NetClient
-import com.visokr.android.core.unwrapOrNull
-import com.visokr.android.ui.LocalVisTokens
-import com.visokr.android.ui.VisCard
-import com.visokr.android.ui.VisTopBar
+import com.summitokr.android.core.FeedbackReq
+import com.summitokr.android.core.NetClient
+import com.summitokr.android.core.unwrapOrNull
+import com.summitokr.android.ui.LocalSummitTokens
+import com.summitokr.android.ui.SummitCard
+import com.summitokr.android.ui.SummitTopBar
 import kotlinx.coroutines.launch
 
 private val faqs = listOf(
@@ -60,7 +60,7 @@ private val faqs = listOf(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HelpPage(navController: NavController) {
-    val t = LocalVisTokens.current
+    val t = LocalSummitTokens.current
     var type by remember { mutableStateOf("bug") }
     var content by remember { mutableStateOf("") }
     var sent by remember { mutableStateOf(false) }
@@ -69,7 +69,7 @@ fun HelpPage(navController: NavController) {
     Scaffold(
         containerColor = if (t.macos) Color.Transparent else t.bg,
         topBar = {
-            VisTopBar(
+            SummitTopBar(
                 title = { Text("帮助与反馈", fontWeight = FontWeight.Bold) },
                 navigationIcon = { IconButton(onClick = { navController.popBackStack() }) { Icon(Icons.Outlined.ArrowBack, null) } },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = if (t.macos) Color.Transparent else MaterialTheme.colorScheme.surface),
@@ -83,7 +83,7 @@ fun HelpPage(navController: NavController) {
             Text("常见问题", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
             faqs.forEach { (q, a) ->
                 var expanded by remember { mutableStateOf(false) }
-                VisCard(modifier = Modifier.fillMaxWidth(), onClick = { expanded = !expanded }) {
+                SummitCard(modifier = Modifier.fillMaxWidth(), onClick = { expanded = !expanded }) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(q, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
                         Icon(if (expanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore, null, tint = t.textTertiary)

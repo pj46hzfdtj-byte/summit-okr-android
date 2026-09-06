@@ -1,4 +1,4 @@
-package com.visokr.android.pages
+package com.summitokr.android.pages
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -55,32 +55,32 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.visokr.android.core.Vision
-import com.visokr.android.core.VisionVM
-import com.visokr.android.core.UiState
-import com.visokr.android.core.normProgress
-import com.visokr.android.ui.CapsuleProgress
-import com.visokr.android.ui.EmptyState
-import com.visokr.android.ui.ErrorView
-import com.visokr.android.ui.LoadingView
-import com.visokr.android.ui.LocalVisTokens
-import com.visokr.android.ui.PillTag
-import com.visokr.android.ui.VisCard
-import com.visokr.android.ui.VisTopBar
+import com.summitokr.android.core.Vision
+import com.summitokr.android.core.VisionVM
+import com.summitokr.android.core.UiState
+import com.summitokr.android.core.normProgress
+import com.summitokr.android.ui.CapsuleProgress
+import com.summitokr.android.ui.EmptyState
+import com.summitokr.android.ui.ErrorView
+import com.summitokr.android.ui.LoadingView
+import com.summitokr.android.ui.LocalSummitTokens
+import com.summitokr.android.ui.PillTag
+import com.summitokr.android.ui.SummitCard
+import com.summitokr.android.ui.SummitTopBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VisionPage(navController: NavController) {
     val vm: VisionVM = viewModel()
     val visions by vm.visions.collectAsState()
-    val t = LocalVisTokens.current
+    val t = LocalSummitTokens.current
     var editing by remember { mutableStateOf<Vision?>(null) }
     var showCreate by remember { mutableStateOf(false) }
 
     Scaffold(
         containerColor = if (t.macos) Color.Transparent else t.bg,
         topBar = {
-            VisTopBar(
+            SummitTopBar(
                 title = { Text("愿景", fontWeight = FontWeight.Bold) },
                 navigationIcon = { IconButton(onClick = { navController.popBackStack() }) { Icon(Icons.Outlined.ArrowBack, null) } },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = if (t.macos) Color.Transparent else MaterialTheme.colorScheme.surface),
@@ -106,7 +106,7 @@ fun VisionPage(navController: NavController) {
                 ) {
                     items(s.data) { v ->
                         var menu by remember(v.id) { mutableStateOf(false) }
-                        VisCard(
+                        SummitCard(
                             modifier = Modifier.aspectRatio(0.95f).clickable { menu = true },
                             contentPadding = PaddingValues(14.dp),
                         ) {
@@ -215,7 +215,7 @@ private fun VisionEditDialog(initial: Vision?, onDismiss: () -> Unit, onSave: (S
 
 @Composable
 private fun visionStatusColor(status: String): Color {
-    val t = LocalVisTokens.current
+    val t = LocalSummitTokens.current
     return when (status) {
         "in_progress" -> MaterialTheme.colorScheme.primary
         "achieved" -> t.success

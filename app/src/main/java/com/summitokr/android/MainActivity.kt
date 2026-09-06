@@ -1,4 +1,4 @@
-package com.visokr.android
+package com.summitokr.android
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -8,11 +8,11 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.lifecycleScope
-import com.visokr.android.core.NetClient
-import com.visokr.android.core.Prefs
-import com.visokr.android.core.TokenStore
-import com.visokr.android.ui.RootNav
-import com.visokr.android.ui.VisTheme
+import com.summitokr.android.core.NetClient
+import com.summitokr.android.core.Prefs
+import com.summitokr.android.core.TokenStore
+import com.summitokr.android.ui.RootNav
+import com.summitokr.android.ui.SummitTheme
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -35,7 +35,7 @@ class MainActivity : ComponentActivity() {
                 "dark" -> true
                 else -> isSystemInDarkTheme()
             }
-            VisTheme(seed = prefs.value.themeSeed, dark = dark) {
+            SummitTheme(seed = prefs.value.themeSeed, dark = dark) {
                 RootNav()
             }
         }
