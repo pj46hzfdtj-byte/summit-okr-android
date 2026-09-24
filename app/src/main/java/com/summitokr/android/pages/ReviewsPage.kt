@@ -1,5 +1,6 @@
 package com.summitokr.android.pages
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -44,6 +45,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -138,18 +140,41 @@ private fun ReviewCard(r: Review) {
                 if (r.createdAt.isNotBlank()) Text(fmtDate(r.createdAt), fontSize = 12.sp, color = t.textTertiary)
             }
             Spacer(Modifier.height(8.dp))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("自评", style = MaterialTheme.typography.bodySmall, color = t.textTertiary)
-                Spacer(Modifier.size(6.dp))
-                Text("${r.selfRating.toInt()} 分", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
-                r.objectiveScore?.let {
-                    Spacer(Modifier.size(12.dp))
-                    Text("目标得分 ${String.format("%.1f", it)}", style = MaterialTheme.typography.bodySmall)
-                }
-            }
+            ReviewHero(r.selfRating, r.objectiveScore)
             if (!r.thoughts.isNullOrBlank()) {
                 Spacer(Modifier.height(6.dp))
                 Text(r.thoughts!!, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 3)
+            }
+        }
+    }
+}
+
+/** VisOKR 风格：自评 emoji 英雄区（emoji + 大数字 + 自评·label + 目标得分），背景按阈值着色 */
+@Composable
+private fun ReviewHero(selfRating: Double, objectiveScore: Double?) {
+    val t = LocalSummitTokens.current
+    val v = Math.round(selfRating * 100).toInt()
+    val (emoji, label, color) = when {
+        v >= 90 -> Triple("🤩", "太棒了", t.success)
+        v >= 70 -> Triple("😊", "很满意", t.success)
+        v >= 60 -> Triple("🙂", "还不错", t.warning)
+        v >= 40 -> Triple("😕", "不太满意", t.warning)
+        else -> Triple("😣", "很不理想", t.danger)
+    }
+    Row(
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(t.radiusControl))
+            .background(color.copy(alpha = 0.10f))
+            .padding(horizontal = 14.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(emoji, fontSize = 30.sp)
+        Spacer(Modifier.size(12.dp))
+        Text("$v", style = MaterialTheme.typography.displaySmall, color = color, fontWeight = FontWeight.Bold)
+        Spacer(Modifier.size(12.dp))
+        Column(Modifier.weight(1f)) {
+            Text("自评 · $label", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+            objectiveScore?.let {
+                Text("目标得分 ${String.format("%.1f", it)}", style = MaterialTheme.typography.bodySmall, color = t.textTertiary)
             }
         }
     }

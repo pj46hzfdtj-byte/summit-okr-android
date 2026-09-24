@@ -3,8 +3,11 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WRITE_CALENDAR" />
+    <uses-permission android:name="android.permission.READ_CALENDAR" />
 
     <application
+        android:name=".SummitApp"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -21,5 +24,66 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- 桌面小组件（对照 VisOKR 桌面组件） -->
+        <receiver
+            android:name=".widget.SummitGlanceWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_summit_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/summit_glance_widget_info" />
+        </receiver>
+        <!-- 动机速览小组件（2x2） -->
+        <receiver
+            android:name=".widget.SummitMotivationWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_motivation_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/summit_motivation_widget_info" />
+        </receiver>
+        <!-- 今日任务小组件（4x2） -->
+        <receiver
+            android:name=".widget.SummitTasksWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_tasks_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/summit_tasks_widget_info" />
+        </receiver>
+        <!-- KPI 速览小组件（2x2） -->
+        <receiver
+            android:name=".widget.SummitKpiWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_kpi_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/summit_kpi_widget_info" />
+        </receiver>
+        <!-- 目标进度列表小组件（4x2） -->
+        <receiver
+            android:name=".widget.SummitGoalsWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_goals_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/summit_goals_widget_info" />
+        </receiver>
     </application>
 </manifest>

@@ -1,4 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Summit OKR</string>
+    <string name="widget_summit_description">周期评分、目标进度与今日任务速览</string>
+    <string name="widget_summit_label">Summit OKR 速览</string>
+    <string name="widget_motivation_label">Summit 动机</string>
+    <string name="widget_motivation_description">每日随机动机与专注周期评分</string>
+    <string name="widget_tasks_label">Summit 今日任务</string>
+    <string name="widget_tasks_description">今日任务清单与完成进度</string>
+    <string name="widget_kpi_label">Summit KPI 速览</string>
+    <string name="widget_kpi_description">今日进度与进行中目标数</string>
+    <string name="widget_goals_label">Summit 目标进度</string>
+    <string name="widget_goals_description">专注周期目标进度一览</string>
 </resources>

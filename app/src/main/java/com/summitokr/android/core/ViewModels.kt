@@ -129,6 +129,16 @@ class SummaryVM : ViewModel() {
             }
         }
     }
+
+    fun addRecord(keyResultId: String, value: Double, note: String?) {
+        viewModelScope.launch {
+            try {
+                NetClient.api.createRecord(CreateRecordReq(keyResultId, value, note)).unwrapOrNull()
+                _summary.load { NetClient.api.summary().unwrap() }
+            } catch (_: Exception) {
+            }
+        }
+    }
 }
 
 class GoalsVM : ViewModel() {
@@ -189,11 +199,22 @@ class GoalDetailVM(val objectiveId: String) : ViewModel() {
     }
 }
 
+/** 完成庆祝浮层数据（VisOKR 风格） */
+data class Celebrate(val msg: String, val sub: String, val pct: String)
+
 class TasksVM : ViewModel() {
     private val _tasks = MutableStateFlow<UiState<List<Task>>>(UiState.Loading)
     val tasks: StateFlow<UiState<List<Task>>> = _tasks.asStateFlow()
+    private val _celebrate = MutableStateFlow<Celebrate?>(null)
+    val celebrate: StateFlow<Celebrate?> = _celebrate.asStateFlow()
+    private var objectives: List<Objective> = emptyList()
 
-    init { refresh() }
+    init {
+        refresh()
+        viewModelScope.launch {
+            try { objectives = NetClient.api.objectives(page = 1, pageSize = 200).unwrap().list } catch (_: Exception) {}
+        }
+    }
 
     fun refresh() {
         _tasks.load { NetClient.api.tasks().unwrap() }
@@ -212,12 +233,24 @@ class TasksVM : ViewModel() {
     fun toggle(task: Task) {
         viewModelScope.launch {
             try {
-                NetClient.api.completeTask(task.id, CompleteTaskReq(task.status != "completed")).unwrapOrNull()
+                val wasPending = task.status != "completed"
+                NetClient.api.completeTask(task.id, CompleteTaskReq(wasPending)).unwrapOrNull()
+                if (wasPending) {
+                    val msgs = listOf("又近了一步，继续加油！", "坚持就是胜利！", "今天的努力看得见！", "离目标更近了！", "太棒了，保持节奏！")
+                    val obj = task.objectiveId?.let { id -> objectives.find { it.id == id } }
+                    _celebrate.value = Celebrate(
+                        msg = msgs[(0 until msgs.size).random()],
+                        sub = obj?.title ?: "",
+                        pct = obj?.currentProgress?.let { "${(normProgress(it) * 100).toInt()}%" } ?: "",
+                    )
+                }
                 refresh()
             } catch (_: Exception) {
             }
         }
     }
+
+    fun clearCelebrate() { _celebrate.value = null }
 
     fun remove(id: String) {
         viewModelScope.launch {

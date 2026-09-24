@@ -108,20 +108,28 @@ private fun LazyListScope.groupNodes(groups: List<GoalGroup>, depth: Int, navCon
     groups.forEach { group ->
         val color = parseHexColor(group.color)
         item {
-            Row(
-                Modifier.fillMaxWidth().padding(start = (12 + depth * 12).dp, end = 12.dp, top = 10.dp, bottom = 4.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Icon(Icons.Outlined.Folder, null, tint = color, modifier = Modifier.size(18.dp))
-                Spacer(Modifier.size(6.dp))
-                Text(
-                    group.name,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = color,
-                    modifier = Modifier.weight(1f),
-                )
-                group.vision?.let { v -> PillTag("愿景·${v.content.take(8)}", color) }
+            Column(Modifier.fillMaxWidth().padding(start = (12 + depth * 12).dp, end = 12.dp, top = 10.dp, bottom = 4.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Outlined.Folder, null, tint = color, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.size(6.dp))
+                    Text(
+                        group.name,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = color,
+                        modifier = Modifier.weight(1f),
+                    )
+                    group.vision?.let { v -> PillTag("愿景·${v.content.take(8)}", color) }
+                }
+                val gp = normProgress(group.progress)
+                if (gp > 0.0) {
+                    Spacer(Modifier.height(4.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        CapsuleProgress(gp.toFloat(), modifier = Modifier.weight(1f), color = color, height = 4.dp)
+                        Spacer(Modifier.size(8.dp))
+                        Text("${(gp * 100).toInt()}%", fontSize = 11.sp, color = LocalSummitTokens.current.textTertiary)
+                    }
+                }
             }
         }
         group.objectives.forEach { obj -> objectiveTile(obj, depth, navController) }

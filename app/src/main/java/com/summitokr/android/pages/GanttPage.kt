@@ -28,9 +28,13 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.foundation.clickable
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -80,6 +84,20 @@ fun GanttPage(navController: NavController) {
                 val d = s.data
                 if (d.items.isEmpty()) EmptyState("暂无排期", Modifier.padding(padding))
                 else {
+                    var filter by remember { mutableStateOf("all") }
+                    val isActive = { it: com.summitokr.android.core.GanttItem -> it.status == "in_progress" || it.status == "pending_review" }
+                    val counts = mapOf(
+                        "all" to d.items.size,
+                        "active" to d.items.count(isActive),
+                        "lagging" to d.items.count { it.isLagging },
+                        "completed" to d.items.count { it.status == "completed" },
+                    )
+                    val filtered = when (filter) {
+                        "active" -> d.items.filter(isActive)
+                        "lagging" -> d.items.filter { it.isLagging }
+                        "completed" -> d.items.filter { it.status == "completed" }
+                        else -> d.items
+                    }
                     val start = parseLocalDate(d.rangeStart) ?: LocalDate.now()
                     val end = parseLocalDate(d.rangeEnd) ?: start.plusDays(90)
                     val totalDays = ChronoUnit.DAYS.between(start, end).coerceAtLeast(1).toInt()
@@ -88,7 +106,27 @@ fun GanttPage(navController: NavController) {
                     val todayX = ChronoUnit.DAYS.between(start, today).coerceIn(0, totalDays.toLong()) * PX_PER_DAY
 
                     LazyColumn(modifier = Modifier.padding(padding), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        items(d.items) { item ->
+                        item {
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                listOf("all" to "全部", "active" to "进行中", "lagging" to "滞后", "completed" to "已完成").forEach { (key, label) ->
+                                    val sel = filter == key
+                                    Box(
+                                        Modifier.clip(CircleShape)
+                                            .background(if (sel) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh)
+                                            .clickable { filter = key }
+                                            .padding(horizontal = 12.dp, vertical = 6.dp),
+                                    ) {
+                                        Text(
+                                            "$label ${counts[key] ?: 0}",
+                                            fontSize = 12.sp,
+                                            fontWeight = if (sel) FontWeight.SemiBold else null,
+                                            color = if (sel) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                        items(filtered) { item ->
                             val color = parseHexColor(item.color)
                             Column(Modifier.fillMaxWidth()) {
                                 Text(

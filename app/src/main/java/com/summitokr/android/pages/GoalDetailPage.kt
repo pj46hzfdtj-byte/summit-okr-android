@@ -73,6 +73,7 @@ import com.summitokr.android.ui.ErrorView
 import com.summitokr.android.ui.LoadingView
 import com.summitokr.android.ui.LocalSummitTokens
 import com.summitokr.android.ui.PillTag
+import com.summitokr.android.ui.RingProgress
 import com.summitokr.android.ui.SummitCard
 import com.summitokr.android.ui.SummitTopBar
 import com.summitokr.android.ui.parseHexColor
@@ -224,8 +225,15 @@ private fun HeaderCard(title: String, color: Color, status: String, startAt: Str
     SummitCard(modifier = Modifier.fillMaxWidth()) {
         Column {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(title, style = MaterialTheme.typography.titleMedium, color = color, modifier = Modifier.weight(1f))
-                Text(status, style = MaterialTheme.typography.labelMedium, color = color, fontWeight = FontWeight.Bold)
+                // VisOKR 风格：完成度圆环
+                RingProgress(progress, modifier = Modifier.size(64.dp), color = color) {
+                    Text("${(progress * 100).toInt()}%", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                }
+                Spacer(Modifier.size(12.dp))
+                Column(Modifier.weight(1f)) {
+                    Text(title, style = MaterialTheme.typography.titleMedium, color = color)
+                    Text(status, style = MaterialTheme.typography.labelMedium, color = color, fontWeight = FontWeight.Bold)
+                }
             }
             if (!startAt.isNullOrBlank() && !endAt.isNullOrBlank()) {
                 Spacer(Modifier.height(8.dp))

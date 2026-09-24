@@ -244,6 +244,10 @@ data class GoalGroup(
     val children: List<GoalGroup> = emptyList(),
     val objectives: List<Objective> = emptyList(),
     val vision: Vision? = null,
+    /** 派生：子树目标总数 */
+    val objectiveCount: Int? = null,
+    /** 派生：子树目标平均进度 0-1 */
+    val progress: Double? = null,
 )
 
 @Serializable data class CreateGoalGroupReq(val name: String, val parentId: String? = null, val color: String? = null, val visionId: String? = null)
@@ -320,6 +324,16 @@ data class SummaryData(
     val laggingObjectives: List<Objective> = emptyList(),
     val todayTasks: List<Task> = emptyList(),
     val randomMotivation: String? = null,
+    /** 今日新增记录数 */
+    val todayAddedRecords: Int? = null,
+    /** 今日任务总数（含已完成） */
+    val todayTaskCount: Int? = null,
+    /** 活跃周期剩余天数（无周期时 null） */
+    val cycleDaysRemaining: Int? = null,
+    /** 活跃周期时间进度 0-1 */
+    val cycleTimeProgress: Double? = null,
+    /** 今日整体进度增量 0-1 */
+    val todayProgressDelta: Double? = null,
 )
 
 @Serializable

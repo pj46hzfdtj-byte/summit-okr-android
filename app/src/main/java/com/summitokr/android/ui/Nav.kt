@@ -60,10 +60,18 @@ import com.summitokr.android.pages.VisionPage
 private data class TabSpec(val route: String, val label: String, val icon: ImageVector, val selectedIcon: ImageVector)
 
 @Composable
-fun RootNav() {
+fun RootNav(pendingRoute: String? = null, onRouteConsumed: () -> Unit = {}) {
     val navController = rememberNavController()
     var loggedIn by remember { mutableStateOf(com.summitokr.android.core.TokenStore.accessToken != null) }
     val t = LocalSummitTokens.current
+
+    // 桌面组件点击直达路由（登录后生效）
+    androidx.compose.runtime.LaunchedEffect(pendingRoute, loggedIn) {
+        if (pendingRoute != null && loggedIn) {
+            runCatching { navController.navigate(pendingRoute) }
+            onRouteConsumed()
+        }
+    }
 
     // 对齐 Flutter main.dart 的 AppBackground：macOS 主题下全局挂 Aurora 渐变+光斑背景，
     // 各页 Scaffold 已设 Transparent 容器色，自然透出（登录页自带，不重复包）。
@@ -115,6 +123,10 @@ fun RootNav() {
         composable(Routes.RECYCLE) { RecyclePage(navController) }
         composable(Routes.HELP) { HelpPage(navController) }
         composable(Routes.NOTIFICATIONS) { NotificationsPage(navController) }
+        }
+        // 应用内可折叠悬浮速览窗（对齐桌面端悬浮窗）：登录态叠加在最上层
+        if (loggedIn) {
+            GlanceFloatingOverlay(navController)
         }
     }
 }

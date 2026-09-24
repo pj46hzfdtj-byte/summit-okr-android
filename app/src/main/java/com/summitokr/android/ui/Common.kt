@@ -58,6 +58,7 @@ fun SummitCard(
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
     contentPadding: androidx.compose.foundation.layout.PaddingValues = androidx.compose.foundation.layout.PaddingValues(16.dp),
+    containerColor: Color? = null,
     content: @Composable () -> Unit,
 ) {
     val t = LocalSummitTokens.current
@@ -68,7 +69,7 @@ fun SummitCard(
         modifier
             .shadow(shadowElev, shape, clip = false)
             .clip(shape)
-            .background(visCardColor())
+            .background(containerColor ?: visCardColor())
             .border(visCardBorder().width, visCardBorder().brush, shape)
             .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
     ) {
@@ -142,6 +143,41 @@ fun CapsuleProgress(
     )
 }
 
+/** Canvas 圆环进度（VisOKR 风格）：轨道 + 主色弧线 + 中心文本 */
+@Composable
+fun RingProgress(
+    progress: Float,
+    modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colorScheme.primary,
+    trackColor: Color = color.copy(alpha = 0.15f),
+    strokeWidth: androidx.compose.ui.unit.Dp = 8.dp,
+    content: (@Composable androidx.compose.foundation.layout.BoxScope.() -> Unit)? = null,
+) {
+    val p = progress.coerceIn(0f, 1f)
+    Box(modifier, contentAlignment = Alignment.Center) {
+        androidx.compose.foundation.Canvas(Modifier.matchParentSize()) {
+            val stroke = strokeWidth.toPx()
+            val arcSize = androidx.compose.ui.geometry.Size(size.width - stroke, size.height - stroke)
+            val topLeft = androidx.compose.ui.geometry.Offset(stroke / 2f, stroke / 2f)
+            drawArc(
+                color = trackColor,
+                startAngle = 0f, sweepAngle = 360f, useCenter = false,
+                topLeft = topLeft, size = arcSize,
+                style = androidx.compose.ui.graphics.drawscope.Stroke(width = stroke, cap = androidx.compose.ui.graphics.StrokeCap.Round),
+            )
+            if (p > 0f) {
+                drawArc(
+                    color = color,
+                    startAngle = -90f, sweepAngle = 360f * p, useCenter = false,
+                    topLeft = topLeft, size = arcSize,
+                    style = androidx.compose.ui.graphics.drawscope.Stroke(width = stroke, cap = androidx.compose.ui.graphics.StrokeCap.Round),
+                )
+            }
+        }
+        content?.invoke(this)
+    }
+}
+
 @Composable
 fun EmptyState(text: String, modifier: Modifier = Modifier, icon: androidx.compose.ui.graphics.vector.ImageVector = Icons.Outlined.Inbox) {
     val t = LocalSummitTokens.current
@@ -176,3 +212,6 @@ fun ErrorView(message: String, modifier: Modifier = Modifier, onRetry: () -> Uni
 }
 
 fun Double.toPctInt(): Int = (this * 100).roundToInt()
+
+/** 数值格式化：整数不带小数，否则 1 位小数（对齐 Taro fmtNum） */
+fun fmtNumLocal(v: Double): String = if (v % 1.0 == 0.0) v.toInt().toString() else String.format("%.1f", v)
